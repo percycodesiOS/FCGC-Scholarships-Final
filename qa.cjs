@@ -1,0 +1,31 @@
+const {chromium,webkit,devices}=require('playwright');
+const fs=require('fs'),path=require('path'),assert=require('assert');
+(async()=>{
+ const engine=process.argv[2]||'chromium';
+ const browser=engine==='webkit'?await webkit.launch({headless:true}):await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ const page=await context.newPage();const errors=[];const transmissions=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()!=='GET')transmissions.push(r.url());});
+ await page.goto('http://127.0.0.1:8764');await page.waitForFunction(()=>window.scholarship);
+ for(const name of ['relationship_employee','relationship_child_of_employee','relationship_caddie']){await page.locator(`[name="${name}"]`).check();assert(await page.locator(`[name="${name}"]`).isChecked());await page.locator(`[name="${name}"]`).uncheck();assert(!(await page.locator(`[name="${name}"]`).isChecked()));}
+ const tests=await page.evaluate(()=>{const a={annual_tuition:'35,000',annual_room_board:'10000',annual_miscellaneous:'5000',aid_1_amount:'5000',aid_2_amount:'2500'};return {normal:scholarship.totals(a),partial:scholarship.totals({annual_tuition:'100'}),decimals:scholarship.totals({annual_tuition:'0.10',annual_room_board:'0.20'}),excess:scholarship.totals({annual_tuition:'100',aid_1_amount:'200'}),invalid:scholarship.totals({annual_tuition:'-50'}),zero:scholarship.totals({})};});
+ assert.equal(tests.normal.annual_estimated_cost,5000000);assert.equal(tests.normal.total_financial_aid,750000);assert.equal(tests.normal.total_not_funded,4250000);assert.equal(tests.partial.annual_estimated_cost,10000);assert.equal(tests.decimals.annual_estimated_cost,30);assert.equal(tests.excess.total_not_funded,0);assert.equal(tests.invalid,null);assert.equal(tests.zero.annual_estimated_cost,0);
+ await page.locator('#annual_tuition').fill('35000');assert.equal(await page.locator('#annual_estimated_cost').textContent(),'$35,000.00');
+ await page.locator('#annual_room_board').fill('10000');await page.locator('#annual_miscellaneous').fill('5000');await page.locator('#aid_1_amount').fill('5000');await page.locator('#aid_2_amount').fill('2500');
+ assert.equal(await page.locator('#total_not_funded').textContent(),'$42,500.00');
+ await page.evaluate(()=>{for(const el of document.getElementById('application').elements){if(!el.name||el.hasAttribute('data-money'))continue;if(el.type==='checkbox')el.checked=true;else if(el.type==='radio')el.checked=el.value==='Yes';else el.value=el.name==='email'?'student@example.invalid':el.name==='additional_information'?'QA SAMPLE ONLY - not an actual applicant':el.name.replaceAll('_',' ');}});
+ await page.locator('#applicant_name').fill('QA SAMPLE STUDENT');await page.locator('#aid_1_name').fill('QA Merit Grant');await page.locator('#aid_2_name').fill('QA State Grant');
+ const out=path.join(__dirname,engine==='webkit'?'qa-webkit':'qa-output');fs.mkdirSync(out,{recursive:true});
+ await page.screenshot({path:path.join(out,'phone-top.png')});await page.locator('#financial').screenshot({path:path.join(out,'phone-financial.png')});
+ for(const width of [320,390,768,820,1024,1180,1280]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),`horizontal overflow at ${width}`);}
+ await page.setViewportSize({width:390,height:844});
+ const draft=page.waitForEvent('download');await page.locator('#saveDraft').click();await (await draft).saveAs(path.join(out,'draft.json'));await page.locator('#applicant_name').fill('TEMP CHANGE');await page.locator('#loadDraft').setInputFiles(path.join(out,'draft.json'));await page.waitForFunction(()=>document.getElementById('applicant_name').value==='QA SAMPLE STUDENT');
+ const pdf=page.waitForEvent('download',{timeout:30000});await page.locator('#download').click();const downloaded=await pdf;await downloaded.saveAs(path.join(out,'completed.pdf'));assert((await page.locator('#downloadStatus').textContent()).startsWith('Your PDF is ready'));
+ const data=await page.evaluate(()=>scholarship.values());fs.writeFileSync(path.join(out,'answers.json'),JSON.stringify(data,null,2));
+ const longPdf=await page.evaluate(async()=>{const d=scholarship.values();d.additional_information='LONG ANSWER TEST. '.repeat(500);d.high_school_activities='Activities must never be cut off. '.repeat(50);return Array.from(await scholarship.makePdf(d));});fs.writeFileSync(path.join(out,'long-answers.pdf'),Buffer.from(longPdf));
+ await page.locator('#annual_miscellaneous').fill('');await page.locator('#download').click();assert((await page.locator('#downloadStatus').textContent()).includes('all three'));
+ await page.locator('#annual_miscellaneous').fill('-1');await page.locator('#download').click();assert((await page.locator('#downloadStatus').textContent()).includes('highlighted'));
+ assert.deepEqual(errors,[]);assert.deepEqual(transmissions,[]);fs.writeFileSync(path.join(out,'qa.json'),JSON.stringify({tests,errors,transmissions,viewportWidths:[320,390,768,1280],draftRoundTrip:true,download:true},null,2));
+ const desktopContext=await browser.newContext({viewport:{width:1024,height:768},isMobile:false,userAgent:engine==='webkit'?'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15':devices['Pixel 7'].userAgent});const desktop=await desktopContext.newPage();await desktop.goto('http://127.0.0.1:8764');await desktop.locator('[name="relationship_employee"]').check();await desktop.locator('#annual_tuition').fill('12000');await desktop.locator('#annual_room_board').fill('0');await desktop.locator('#annual_miscellaneous').fill('500');assert.equal(await desktop.locator('#annual_estimated_cost').textContent(),'$12,500.00');const dl=desktop.waitForEvent('download');await desktop.locator('#download').click();await(await dl).saveAs(path.join(out,'desktop-mode.pdf'));
+ console.log(JSON.stringify({passed:true,engine,out,tests,checkboxToggles:true,desktopModeDownload:true}));await browser.close();
+})().catch(e=>{console.error(e);process.exit(1);});

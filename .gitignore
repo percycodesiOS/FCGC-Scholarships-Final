@@ -1,0 +1,5 @@
+qa-output/
+qa-webkit/
+node_modules/
+*.tar.gz
+*.log
