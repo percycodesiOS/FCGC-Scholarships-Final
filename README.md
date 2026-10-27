@@ -15,4 +15,4 @@ Portable website in the handoff ZIP can run on ordinary static hosting without C
 Page edits do not change application fields/PDF templates. The 2027 field map, coverletter and templates must be updated together for another year. User-facing year changes hide the online preview and label the retained PDF as2027. Maintain review status until Foundation approval.
 
 ## Build package
-Run the task workspace packaging script after a verified page render. lib/package-data.ts is generated from a ZIP excluding itself, Git data, environment files and runtime storage. See docs/HANDOFF.md.
+Run `python scripts/make-handoff.py` before building after source changes. The portable-template folder contains the reviewed page snapshot; update that snapshot when its design/content changes. lib/package-data.ts is generated from a ZIP excluding itself, Git data, environment files and runtime storage. See docs/HANDOFF.md.
