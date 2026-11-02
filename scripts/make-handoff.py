@@ -9,8 +9,16 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,strict_timestamps=False) a
  for directory,dirs,files in os.walk(p/'public'):
   for name in files:
    f=Path(directory)/name
-   if f.suffix=='.zip' or name=='mobile-check.html':continue
-   z.write(f,'Portable website/'+f.relative_to(p/'public').as_posix())
+   if f.suffix=='.zip' or name in {'mobile-check.html','cover-letter.pdf'}:continue
+   destination='Portable website/'+f.relative_to(p/'public').as_posix()
+   if f==p/'public/apply/app.js':
+    z.writestr(destination,f.read_text(encoding='utf8').replace("fetch('/api/application'","fetch('./settings.json'"))
+   elif f==p/'public/apply/index.html':
+    z.writestr(destination,f.read_text(encoding='utf8').replace('href="/"','href="../index.html"').replace('href="/manage"','href="../guide.html"'))
+   else:z.write(f,destination)
+ content=json.loads((p/'lib/default-content.json').read_text(encoding='utf8'))
+ settings={**content,'submissionEmail':content['submissionRecipients'][0],'canSubmit':False,'submissionToken':None}
+ z.writestr('Portable website/apply/settings.json',json.dumps(settings))
  z.write(p/'lib/default-content.json','Portable website/content.json')
  for name in ['START-HERE-JANET.md','HANDOFF.md']:z.write(p/'docs'/name,name)
  for directory,dirs,files in os.walk(p):

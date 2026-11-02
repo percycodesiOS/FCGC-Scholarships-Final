@@ -1,0 +1,16 @@
+import fs from 'node:fs/promises';
+import ts from 'typescript';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const root=new URL('../',import.meta.url);
+const source=await fs.readFile(new URL('app/Scholarship.tsx',root),'utf8');
+const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
+const module={exports:{}};
+new Function('require','module','exports',code)(require,module,module.exports);
+const data=JSON.parse(await fs.readFile(new URL('lib/default-content.json',root),'utf8'));
+let body=renderToStaticMarkup(React.createElement(module.exports.default,{data}));
+body=body.replaceAll('href="/manage"','href="guide.html"').replaceAll('href="/handoff"','href="guide.html"').replaceAll('href="/','href="./').replaceAll('src="/','src="./');
+await fs.writeFile(new URL('portable-template/index.html',root),'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fox Chapel Golf Club Scholarship Foundation</title><link rel="stylesheet" href="site.css"></head><body>'+body+'</body></html>');
+console.log('Current portable homepage generated from the maintained website component.');

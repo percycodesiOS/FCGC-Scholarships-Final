@@ -1,10 +1,10 @@
 import { env } from 'cloudflare:workers';
-import { defaults, type Content } from './content';
+import { defaults, currentContent, type Content } from './content';
 const key = 'scholarship/content.json';
 export async function readContent(): Promise<Content> {
   if (!env.BUCKET) return defaults;
   const object = await env.BUCKET.get(key);
-  return object ? await object.json<Content>() : defaults;
+  return object ? currentContent(await object.json<Content>()) : defaults;
 }
 export async function saveContent(content: Content, revision: string) {
   if (!env.BUCKET) throw new Error('The website storage is unavailable. No changes were saved.');

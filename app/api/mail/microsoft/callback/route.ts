@@ -1,0 +1,4 @@
+import { editorUser } from '../../../../../lib/auth';
+import { completeMicrosoft } from '../../../../../lib/mail';
+export const dynamic='force-dynamic';
+export async function GET(request:Request){const url=new URL(request.url),user=await editorUser(),state=url.searchParams.get('state')||'',cookie=(request.headers.get('cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('fcgc-mail-state='))?.slice(16);let status='connected';try{if(!user||!state||cookie!==state||url.searchParams.has('error'))throw new Error('Microsoft connection was not approved.');await completeMicrosoft(url.searchParams.get('code')||'',state,user.userId,url.origin);}catch{status='connection-failed';}return new Response(null,{status:303,headers:{Location:'/manage?mail='+status,'Cache-Control':'no-store','Set-Cookie':'fcgc-mail-state=; HttpOnly; Secure; SameSite=Lax; Path=/api/mail/microsoft/callback; Max-Age=0'}});}
