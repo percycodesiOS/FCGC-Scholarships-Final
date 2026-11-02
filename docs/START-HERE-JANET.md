@@ -4,6 +4,8 @@ Website: https://fcgcscholarships.percycodes.chatgpt.site/
 Application: https://fcgcscholarships.percycodes.chatgpt.site/apply/index.html
 Admin: https://fcgcscholarships.percycodes.chatgpt.site/manage
 
+Bookmark the Admin link above. Admin and handoff links are intentionally absent from the public homepage and student application. The handoff guide also requires an authorized administrator sign-in. Students cannot use the link alone to gain editing access.
+
 Sign into the admin with your own ChatGPT account using jmacek3@gmail.com. The application year, deadline, photo email and primary submission address update both the online form and the PDF. Save changes, open the form and download a blank PDF to verify them.
 
 Submission recipients are one address per line. Applications go only to scholarshipfoundation@foxchapelgolfclub.com, per Kenny's latest instruction. The first address is printed on the application. Janet's Gmail is not on the student form or PDF and does not receive submissions. The connected Microsoft mailbox sends the messages; recipients do not have to use the same provider.
