@@ -53,7 +53,7 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  // Append the approved cover's pages only after all indexed application/signature work.
  // The cover is the original reviewed document, never synthesized from website copy.
  if(blank){
-  const response=await fetch('cover-letter.pdf?v=20261102-4');
+  const response=await fetch('cover-letter.pdf?v=20261102-5');
   if(!response.ok)throw new Error('The original cover letter could not load. Please try the download again.');
   const cover=await PDFDocument.load(await response.arrayBuffer());
   const pages=await doc.copyPages(cover,cover.getPageIndices());
