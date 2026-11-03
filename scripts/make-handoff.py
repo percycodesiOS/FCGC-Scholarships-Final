@@ -9,7 +9,7 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,strict_timestamps=False) a
  for directory,dirs,files in os.walk(p/'public'):
   for name in files:
    f=Path(directory)/name
-   if f.suffix=='.zip' or name in {'mobile-check.html','cover-letter.pdf'}:continue
+   if f.suffix=='.zip' or name in {'mobile-check.html'}:continue
    destination='Portable website/'+f.relative_to(p/'public').as_posix()
    if f==p/'public/apply/app.js':
     z.writestr(destination,f.read_text(encoding='utf8').replace("fetch('/api/application'","fetch('./settings.json'"))
