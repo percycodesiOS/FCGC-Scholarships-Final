@@ -1,6 +1,6 @@
 # Fox Chapel Scholarship website handoff
 
-Updated November 1, 2026. Publication and mailbox connection are separate verification steps; see the dated completion receipt for observed results.
+Updated November 2, 2026. Publication and mailbox connection are separate verification steps; see the dated completion receipt for observed results.
 
 Website: https://fcgcscholarships.percycodes.chatgpt.site/
 Application: https://fcgcscholarships.percycodes.chatgpt.site/apply/index.html
@@ -12,7 +12,9 @@ Janet (jmacek3@gmail.com) and Kenny (kmacek715@gmail.com) are authorized by the 
 
 ## Approved application
 
-The November 1 upload of 2027 Scholarship Application.xlsx is the approved master, SHA-256 131559c42b783a4960e3259f617a5be6fc38c93cf1ac93b3ede4656fdf3f5b03. The website keeps its original green-and-cream design. Its questions and generated five-page PDF follow this Excel, with no older cover-letter requirements. The PDF has 124 fillable fields; completed online PDFs are flattened. Long answers continue on added pages rather than being cut off.
+The November 1 upload of 2027 Scholarship Application.xlsx is the approved master, SHA-256 131559c42b783a4960e3259f617a5be6fc38c93cf1ac93b3ede4656fdf3f5b03. The website keeps its original green-and-cream design. Its questions and generated five-page application body follow this Excel, with no older cover-letter requirements. Blank downloads prepend current Foundation instructions using the saved website settings. The application has 121 fillable fields; completed online PDFs are flattened and retain their existing application, continuation and attachment structure. Long answers continue on added pages rather than being cut off.
+
+The home page leads with the application year and online completion. The Foundation mission tagline is retained below the main banner. The alternate fillable download appears under “Need help or another way to apply?” and includes the instruction cover. Online completion is the main option; applicants can still download and email their packet while automatic submission is unavailable.
 
 Students can save/reopen a progress file, opt into saving on their own device, draw or type electronic signatures, add PDF/JPG/PNG supporting files, and download their completed PDF. The parent/guardian signature is required at Submit for applicants under 18. Editing answers clears signatures for re-signing. Supporting files must be reselected after reopening a draft. Limits: 8 supporting files, 5 MB each, 15 MB total; completed PDF under 20 MB.
 

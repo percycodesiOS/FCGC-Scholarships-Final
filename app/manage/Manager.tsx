@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type Content, validate } from '../../lib/content';
 import Scholarship from '../Scholarship';
 import EmailDelivery from './EmailDelivery';
-const labels:Record<string,string>={year:'Application year',deadline:'Deadline (include time and time zone)',headline:'Main headline',intro:'Short introduction',welcome:'About the scholarship',email:'Contact email',phone:'Front office phone',photoEmail:'Photo email',address:'Foundation mailing address (contact only)',notice:'Review or application notice',eligibility:'Eligibility — one item per line',requirements:'Checklist — one item per line',submissionRecipients:'Submission recipients — one email address per line'};
+const labels:Record<string,string>={year:'Application year',deadline:'Deadline (include time and time zone)',headline:'Foundation mission tagline (below the main banner)',intro:'Short introduction',welcome:'About the scholarship',email:'Contact email',phone:'Front office phone',photoEmail:'Photo email',address:'Foundation mailing address (contact only)',notice:'Review or application notice',eligibility:'Eligibility — one item per line',requirements:'Checklist — one item per line',submissionRecipients:'Submission recipients — one email address per line'};
 export default function Manager({initial,name}:{initial:Content;name:string}){
  const [data,setData]=useState(initial),[saved,setSaved]=useState(initial),[preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[checked,setChecked]=useState(false);
  const dirty=JSON.stringify(data)!==JSON.stringify(saved);
