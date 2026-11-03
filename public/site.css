@@ -5,3 +5,5 @@
 .edit-lock{border:0;padding:0;margin:0;min-width:0}
 
 .foundation-mission{font-size:16px;font-weight:600;line-height:1.6;max-width:490px}
+
+.application-primary{width:100%;padding:20px;gap:18px;font-size:17px;line-height:1.5}.application-primary>span:first-child{min-width:0}.application-primary>span:last-child{flex-shrink:0}.application-band .application-support{font-size:12px;line-height:1.65;margin:12px 0 16px}.application-download{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:10px 0;font-size:13px;line-height:1.65;text-decoration:underline}.application-download>span{flex-shrink:0}.application-band .application-download-note{font-size:12px;line-height:1.65;margin:0;color:#becec2}
