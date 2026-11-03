@@ -5,6 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const root=new URL('../',import.meta.url);
+await fs.copyFile(new URL('app/globals.css',root),new URL('public/site.css',root));
 const source=await fs.readFile(new URL('app/Scholarship.tsx',root),'utf8');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
 const module={exports:{}};

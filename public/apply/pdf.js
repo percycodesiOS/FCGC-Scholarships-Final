@@ -1,8 +1,9 @@
 'use strict';
 // PDF creation stays on the applicant's device. Settings are read from the live admin configuration.
 window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
+ data=FCGCAnswers.normalize(data);
  const {PDFDocument,StandardFonts,PDFName,rgb}=PDFLib;
- const [template,patchResponse]=await Promise.all([fetch('application.pdf'),fetch('pdf-settings.json')]);
+ const [template,patchResponse]=await Promise.all([fetch('application.pdf?v=20261102-2'),fetch('pdf-settings.json?v=20261102-2')]);
  if(!template.ok||!patchResponse.ok)throw new Error('The application template could not load. Your answers are still here.');
  const doc=await PDFDocument.load(await template.arrayBuffer()),form=doc.getForm();
  const font=await doc.embedFont(StandardFonts.TimesRoman),bold=await doc.embedFont(StandardFonts.TimesRomanBold);
@@ -36,17 +37,19 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  const extra=[clean(data.additional_information),...overflow].filter(Boolean).join('\n\n');let lines=wrap(extra,430);
  for(let i=1;i<=27;i++)setText(`additional_information_line_${String(i).padStart(2,'0')}`,lines.shift()||'');
  while(lines.length){const page=doc.addPage([612,792]);page.drawText('Additional Information (continued)',{x:50,y:742,size:14,font:bold});for(let y=714;lines.length&&y>54;y-=15)page.drawText(lines.shift(),{x:50,y,size:9,font});}
- const signed=[];
+ const signed=[],drawnSignatures=[];
  for(const [role,fieldName] of [['student','student_typed_name'],['parent','parent_guardian_typed_name']]){
   const signature=data.signatures?.[role];if(!signature)continue;
   const box=fields.get(fieldName).acroField.getWidgets()[0].getRectangle();encode(signature.name,`${role} signature`);
-  if(signature.image){const image=await doc.embedPng(signature.image);const scale=Math.min(box.width/image.width,box.height/image.height);doc.getPage(3).drawImage(image,{x:box.x,y:box.y,width:image.width*scale,height:image.height*scale});}
+  if(signature.image){const image=await doc.embedPng(signature.image);const scale=Math.min(box.width/image.width,box.height/image.height);drawnSignatures.push({image,box:{x:box.x,y:box.y,width:image.width*scale,height:image.height*scale}});}
   else setText(fieldName,signature.name);
   signed.push(`${role==='student'?'Student':'Parent / guardian'}: ${signature.name} - electronically signed ${new Date(signature.at).toLocaleString('en-US',{timeZone:'America/New_York'})} ET`);
  }
  if(signed.length){const page=doc.getPage(3);page.drawText('Electronic signatures applied by the signers with their consent.',{x:89,y:256,size:8,font});signed.forEach((line,i)=>{let size=8;while(size>6&&font.widthOfTextAtSize(line,size)>435)size-=.25;page.drawText(line,{x:89,y:244-i*12,size,font});});}
  form.updateFieldAppearances(font);
  if(!blank){form.flatten();for(const page of doc.getPages())page.node.delete(PDFName.of('Annots'));doc.catalog.delete(PDFName.of('AcroForm'));}
+ // Flattened empty-field appearances can be opaque. Paint signatures last.
+ for(const {image,box} of drawnSignatures)doc.getPage(3).drawImage(image,box);
  doc.catalog.delete(PDFName.of('StructTreeRoot'));doc.catalog.delete(PDFName.of('MarkInfo'));
  doc.setTitle(`${config.year} Fox Chapel Scholarship Application`);doc.setAuthor('Fox Chapel Golf Club Scholarship Foundation, Inc.');
  return doc.save();

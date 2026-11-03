@@ -1,30 +1,29 @@
 {
   "year": "2027",
-  "headline": "A strong foundation.\nA brighter next chapter.",
+  "headline": "Promoting personal growth\nthrough higher education.",
   "intro": "Supporting the next chapter in education for Fox Chapel Golf Club employees, children of employees, and caddies.",
   "deadline": "Friday, June 18, 2027 · 4:30 p.m. EDT",
-  "welcome": "Through the generosity of Club members, the Foundation helps eligible members of our Club community pursue post-secondary education. Scholarships are awarded for one year, and eligible applicants may reapply in later years.",
+  "welcome": "Through the generosity of Club members, the Foundation helps eligible team members pursue post-secondary education. Scholarships are awarded for one year, and eligible applicants may reapply in later years.",
   "eligibility": [
-    "For employees, children of employees, and caddies of Fox Chapel Golf Club.",
-    "Tell us the qualified school or college you plan to attend in Fall {year}.",
-    "Complete the six application sections and include the required supporting documents."
+    "Club employees must have commenced employment before January 1, 2027 and have completed a minimum of 160 hours of work since their start date.",
+    "Caddies must have completed a minimum of 15 rounds (preferably 20) during 2026 and trending toward completing at least 15 rounds (preferably 20) in 2027.",
+    "Applicants must be enrolled at a qualified school for the Fall 2027 semester."
   ],
   "requirements": [
-    "The completed scholarship application.",
-    "A recommendation letter from someone outside Fox Chapel Golf Club; include their name and relationship. Letters from FCGC personnel do not qualify.",
-    "A personal essay of 1–2 pages about your educational and occupational goals and how this scholarship would help.",
-    "The first two pages of your FAFSA summary, if submitted. Explain if you did not submit FAFSA.",
-    "Your school’s financial aid estimate for one full academic year. Explain pending aid or missing documents.",
-    "Full-year tuition and required fees, housing and food, miscellaneous costs, and scholarships or grants.",
-    "Student signature; parent or guardian signature if the student is under 18."
+    "The completed 2027 scholarship application.",
+    "A recommendation letter from someone outside Fox Chapel Golf Club. Letters from FCGC personnel do not qualify.",
+    "A personal essay of 1–2 pages about your educational and career goals, how this scholarship would help, and significant experiences that have shaped your aspirations.",
+    "The first two pages of your FAFSA summary, if submitted.",
+    "Your school’s financial aid estimate for one full academic year.",
+    "A digital photo of the applicant."
   ],
   "email": "scholarshipfoundation@foxchapelgolfclub.com",
   "phone": "(412) 967-9081",
   "photoEmail": "wparks@foxchapelgolfclub.com",
-  "address": "Scholarship Committee\nFox Chapel Golf Club Scholarship Foundation, Inc.\n426 Fox Chapel Road\nPittsburgh, PA 15238",
+  "address": "Fox Chapel Golf Club Scholarship Foundation, Inc.\n426 Fox Chapel Road\nPittsburgh, PA 15238",
   "notice": "Scholarship applications are open.",
-  "updatedAt": null,
-  "revision": "initial",
+  "updatedAt": "2026-11-03T00:33:30.652Z",
+  "revision": "e1023be5-5892-4125-a8ba-3bb71d3d120b",
   "applicationVersion": "excel-2026-11-01",
   "submissionOpen": true,
   "submissionRecipients": [

@@ -14,6 +14,8 @@ The email connection requires one-time Microsoft app registration and approval o
 
 The form preserves the website's original design. The approved Excel supplies the application questions and the printed PDF layout. Annual settings are editable here; changes to the actual questions or Excel layout need a matching template update.
 
+For each new application year, also review the eligibility text and its employment/caddie dates. Changing the year field does not rewrite dates inside those policy paragraphs. Preview the website and a blank PDF before sharing the new year's link.
+
 Students can save a progress file, reopen it, optionally remember progress on a private device, sign with a mouse/finger/stylus or type a signature, and download a completed PDF. Attachments must be selected again after reopening a draft. Editing answers invalidates previous signatures.
 
 # Shared working folder on your Mac
