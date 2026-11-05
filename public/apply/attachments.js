@@ -1,6 +1,6 @@
 'use strict';
 
-// Files are read and combined on the applicant's device, never uploaded.
+// Files are combined on the applicant's device. Only Submit sends the resulting PDF to the Foundation.
 function validateAttachments(files) {
   if (files.length > 8) throw new Error('Choose up to eight supporting files.');
   let total = 0;
@@ -29,7 +29,7 @@ async function appendAttachments(bytes, files) {
       if (source.getPageCount() > 30) throw new Error('Each supporting PDF may contain up to 30 pages.');
       const form = source.getForm();
       if (form.getFields().some(field => field instanceof PDFLib.PDFSignature)) {
-        throw new Error(`Keep the original signed file ${file.name} separate so its digital signature is preserved. Remove it here and include it when you submit.`);
+        throw new Error(`${file.name} has a certificate signature. Upload a readable PDF copy so it can be included in the one application packet; retain the signed original.`);
       }
       if (form.getFields().length) form.flatten();
       for (const page of source.getPages()) page.node.delete(PDFName.of('Annots'));

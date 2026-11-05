@@ -11,3 +11,13 @@ a, #recipients { overflow-wrap: anywhere; }
 
 /* One typeface and size for all entered answers; retain the established heading hierarchy. */
 [hidden]{display:none!important}input,textarea,select{font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:400}.cover-pages{display:grid;gap:18px;margin:22px 0}.cover-pages figure{margin:0}.cover-pages img{display:block;width:100%;height:auto;border:1px solid var(--border)}.cover-pages figcaption{font-size:13px;color:#52675b;text-align:center;padding:6px}.cover-transcript{white-space:pre-line}.cover-ack{align-items:flex-start;padding-top:16px;border-top:1px solid var(--border)}.cover-ack input{margin-top:3px}button:disabled{cursor:default}#testApplicationControl{border:2px dashed #9c6226;padding:12px;background:#fff7e8}
+
+/* November review: ruled answers, square choices, restrained callouts. */
+#application input:not([type=checkbox]):not([type=radio]),#application textarea{border:0;border-bottom:1px solid #687b70;border-radius:0;background:#fff;padding:10px 4px}
+.choices label{border:0;border-radius:0;padding:8px 6px}
+.choices input[type=radio]{appearance:none;display:inline-grid;place-content:center;width:20px;height:20px;min-height:20px;padding:0;border:1.5px solid #52675b;border-radius:0}
+.choices input[type=radio]:checked::before{content:"✓";font:bold 16px Arial;color:#193e35}
+.choices input[type=checkbox],.check input{border-radius:0}
+.signature-grid,.submission-notice{background:#edf4ee;border:1px solid #cad8cc;border-radius:2px;padding:18px;margin:20px 0}
+.signature-preview{border-radius:0}.review-identity{border-left:4px solid #53785d;padding:12px 16px;background:#f1f6f0;overflow-wrap:anywhere}
+.upload-link{font-weight:700}#supportingFiles{padding:14px;background:#edf4ee;border:1px solid #8da494;border-radius:2px}#supportingFiles::file-selector-button{padding:10px;margin-right:12px;background:#193e35;color:white;border:0;cursor:pointer}

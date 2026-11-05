@@ -8,7 +8,8 @@
     "kind": "year",
     "suffix": "",
     "size": 11.88000000000011,
-    "bold": false
+    "bold": false,
+    "baseline": 699.46
   },
   {
     "page": 0,
@@ -29,18 +30,20 @@
     "kind": "year",
     "suffix": "",
     "size": 8.520000000000039,
-    "bold": false
+    "bold": false,
+    "baseline": 405.91
   },
   {
     "page": 1,
-    "x": 541.0028,
-    "y": 22.58000000000004,
-    "width": 20.641200000000026,
-    "height": 11.360000000000014,
-    "kind": "year",
+    "x": 510,
+    "y": 20,
+    "width": 57,
+    "height": 16,
+    "kind": "footer",
     "suffix": "",
-    "size": 9.360000000000014,
-    "bold": false
+    "size": 9.36,
+    "bold": false,
+    "baseline": 25
   },
   {
     "page": 2,
@@ -51,7 +54,8 @@
     "kind": "year",
     "suffix": ".",
     "size": 8.519999999999982,
-    "bold": true
+    "bold": false,
+    "baseline": 701.14
   },
   {
     "page": 2,
@@ -62,29 +66,32 @@
     "kind": "academicYear",
     "suffix": "",
     "size": 9.360000000000014,
-    "bold": true
+    "bold": true,
+    "baseline": 587.56
   },
   {
     "page": 2,
-    "x": 541.0028,
-    "y": 22.58000000000004,
-    "width": 20.641200000000026,
-    "height": 11.360000000000014,
-    "kind": "year",
+    "x": 510,
+    "y": 20,
+    "width": 57,
+    "height": 16,
+    "kind": "footer",
     "suffix": "",
-    "size": 9.360000000000014,
-    "bold": true
+    "size": 9.36,
+    "bold": false,
+    "baseline": 25
   },
   {
     "page": 3,
-    "x": 541.0028,
-    "y": 22.58000000000004,
-    "width": 20.641200000000026,
-    "height": 11.360000000000014,
-    "kind": "year",
+    "x": 510,
+    "y": 20,
+    "width": 57,
+    "height": 16,
+    "kind": "footer",
     "suffix": "",
-    "size": 9.360000000000014,
-    "bold": false
+    "size": 9.36,
+    "bold": false,
+    "baseline": 25
   },
   {
     "page": 3,
@@ -108,14 +115,15 @@
   },
   {
     "page": 4,
-    "x": 541.0028,
-    "y": 22.58000000000004,
-    "width": 20.641200000000026,
-    "height": 11.360000000000014,
-    "kind": "year",
+    "x": 510,
+    "y": 20,
+    "width": 57,
+    "height": 16,
+    "kind": "footer",
     "suffix": "",
-    "size": 9.360000000000014,
-    "bold": false
+    "size": 9.36,
+    "bold": false,
+    "baseline": 25
   },
   {
     "page": 2,
