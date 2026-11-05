@@ -21,3 +21,6 @@ a, #recipients { overflow-wrap: anywhere; }
 .signature-grid,.submission-notice{background:#edf4ee;border:1px solid #cad8cc;border-radius:2px;padding:18px;margin:20px 0}
 .signature-preview{border-radius:0}.review-identity{border-left:4px solid #53785d;padding:12px 16px;background:#f1f6f0;overflow-wrap:anywhere}
 .upload-link{font-weight:700}#supportingFiles{padding:14px;background:#edf4ee;border:1px solid #8da494;border-radius:2px}#supportingFiles::file-selector-button{padding:10px;margin-right:12px;background:#193e35;color:white;border:0;cursor:pointer}
+
+/* Keep both signer headings, previews and buttons on matching baselines. */
+.signature-grid>div{display:flex;flex-direction:column;min-width:0}.signature-grid h3{font-size:19px;line-height:1.3;margin:0 0 12px;min-height:2.6em}.signature-grid .signature-preview{height:110px;flex:0 0 110px}.signature-grid [data-sign]{width:100%}.signature-grid .hint{margin-top:10px}

@@ -66,7 +66,13 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
   page.drawRectangle({x:r.x+1,y:r.y+1,width:8.5,height:8.5,borderWidth:.7,borderColor:rgb(0,0,0)});
   if(on){page.drawLine({start:{x:r.x+2.3,y:r.y+5},end:{x:r.x+4.4,y:r.y+2.6},thickness:1,color:rgb(0,0,0)});page.drawLine({start:{x:r.x+4.4,y:r.y+2.6},end:{x:r.x+8.3,y:r.y+8},thickness:1,color:rgb(0,0,0)});}
  }
- // Subtle emphasis only: retain all existing wording and lines.
+ // Match both signature labels without moving the approved signature lines.
+ for(const [label,y] of [['Student Signature',386.23],['Parent or Guardian Signature',307.49]]){
+  const page=doc.getPage(3),size=8.52;
+  page.drawRectangle({x:359,y:y-2,width:166,height:13,color:rgb(1,1,1)});
+  page.drawText(label,{x:442-bold.widthOfTextAtSize(label,size)/2,y,size,font:bold,color:rgb(0,0,0)});
+ }
+ // Subtle emphasis only: retain all other existing wording and lines.
  for(const box of [{x:80,y:279,width:452,height:169},{x:80,y:114,width:452,height:111}])doc.getPage(3).drawRectangle({...box,color:rgb(.15,.5,.3),opacity:.07,borderColor:rgb(.64,.75,.67),borderWidth:.6});
 
  // Flattened empty-field appearances can be opaque. Paint signatures last.
