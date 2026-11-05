@@ -9,8 +9,6 @@ function requireCover(){if(!coverAcknowledged||!coverCheck.checked)throw new Err
 coverCheck.onchange=()=>{beginButton.disabled=!coverCheck.checked;};
 beginButton.onclick=()=>{if(!coverCheck.checked)return;coverAcknowledged=true;document.getElementById('coverLetterGate').hidden=true;document.getElementById('applicationWorkflow').hidden=false;document.getElementById('applicant_name').focus();};
 document.getElementById('reviewCover').onclick=()=>{coverAcknowledged=false;coverCheck.checked=false;beginButton.disabled=true;document.getElementById('applicationWorkflow').hidden=true;document.getElementById('coverLetterGate').hidden=false;document.getElementById('coverLetterTitle').scrollIntoView({block:'start'});};
-document.getElementById('testApplicationControl').hidden=!config.testModeAvailable;
-document.getElementById('testApplication').onchange=()=>{signatures={};renderSignatures();changed();};
 
 const F=(name,label,type='text',full=false,hint='')=>({name,label,type,full,hint});
 const groups=[
@@ -46,7 +44,7 @@ form.innerHTML=groups.map(g=>`<section id="${g.id}"><h2>Section ${g.number}: ${g
 ${input(F('additional_information','Additional Information','textarea',true,'Identify the section you are explaining. Long answers continue on an extra page.'))}</section>`;
 
 let signatures={};
-function values(){const data={};for(const el of form.elements){if(!el.name)continue;if(el.type==='checkbox')data[el.name]=el.checked;else if(el.type==='radio'){if(el.checked)data[el.name]=el.value;}else data[el.name]=el.value;}data.signatures=signatures;data.testApplication=!!config.testModeAvailable&&document.getElementById('testApplication').checked;return data;}
+function values(){const data={};for(const el of form.elements){if(!el.name)continue;if(el.type==='checkbox')data[el.name]=el.checked;else if(el.type==='radio'){if(el.checked)data[el.name]=el.value;}else data[el.name]=el.value;}data.signatures=signatures;data.testApplication=false;return data;}
 function cents(value){const s=String(value??'').trim().replace(/^\$/,'');if(!s)return 0;if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,2})?$/.test(s)&&!/^\.\d{1,2}$/.test(s))return NaN;const [a,b='']=s.replaceAll(',','').split('.');const n=Number(a||0)*100+Number((b+'00').slice(0,2));return Number.isSafeInteger(n)&&n<=999999999999? n:NaN;}
 function totals(data){const parsed=moneyNames.map(n=>cents(data[n]));if(parsed.some(n=>!Number.isFinite(n)))return null;const a=parsed.slice(0,3).reduce((a,b)=>a+b,0);const b=parsed.slice(3).reduce((a,b)=>a+b,0);return {annual_estimated_cost:a,total_financial_aid:b,total_not_funded:Math.max(0,a-b)};}
 const usd=n=>(n/100).toLocaleString('en-US',{style:'currency',currency:'USD'});
@@ -55,7 +53,7 @@ function update(){const data=values();document.getElementById('reviewIdentity').
 let dirty=false,prepared=null,currentUrl=null,submitted=false,submitting=false;
 function updateSubmitState(){document.getElementById('submitApplication').disabled=submitted||submitting||!config.canSubmit||!document.getElementById('submissionConsent').checked;}
 document.getElementById('submissionConsent').addEventListener('change',updateSubmitState);
-function lockSubmitted(){submitted=true;form.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=true);for(const id of ['supportingFiles','clearAttachments','saveDraft','loadDraft','restoreProgress','rememberProgress','testApplication','submissionConsent','reviewCover'])document.getElementById(id).disabled=true;document.getElementById('submitApplication').disabled=true;document.getElementById('submitApplication').textContent='Submitted';}
+function lockSubmitted(){submitted=true;form.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=true);for(const id of ['supportingFiles','clearAttachments','saveDraft','loadDraft','restoreProgress','rememberProgress','submissionConsent','reviewCover'])document.getElementById(id).disabled=true;document.getElementById('submitApplication').disabled=true;document.getElementById('submitApplication').textContent='Submitted';}
 const draftKey=`fcgc-progress-${year}`,status=document.getElementById('draftStatus');
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function draft(){return {schema:'fcgc-application-v2',year,answers:values(),savedAt:new Date().toISOString()};}
