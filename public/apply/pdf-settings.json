@@ -116,5 +116,15 @@
     "suffix": "",
     "size": 9.360000000000014,
     "bold": false
+  },
+  {
+    "page": 2,
+    "x": 88.8,
+    "y": 366.2,
+    "width": 342,
+    "height": 13.8,
+    "kind": "awardsYear",
+    "size": 9.36,
+    "bold": true
   }
 ]

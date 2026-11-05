@@ -54,7 +54,7 @@ function describeAttachments() {
   try {
     validateAttachments(files);
     status.className = 'small';
-    status.textContent = files.length ? `${files.length} file(s) selected: ${files.map(file => file.name).join('; ')}. They will follow your application in the downloaded packet.` : 'No supporting files selected. You can also submit them separately with your signed application.';
+    status.textContent = files.length ? `${files.length} file(s) selected: ${files.map(file => file.name).join('; ')}. They will follow your application in the downloaded packet.` : 'No supporting files selected. Explain pending or unavailable documents in the application.';
   } catch (error) {
     status.className = 'error';
     status.textContent = error.message;

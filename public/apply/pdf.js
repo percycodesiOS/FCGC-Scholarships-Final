@@ -3,7 +3,7 @@
 window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  data=FCGCAnswers.normalize(data);
  const {PDFDocument,StandardFonts,PDFName,rgb}=PDFLib;
- const [template,patchResponse]=await Promise.all([fetch('application.pdf?v=20261102-2'),fetch('pdf-settings.json?v=20261102-2')]);
+ const [template,patchResponse]=await Promise.all([fetch('application.pdf?v=20261102-2'),fetch('pdf-settings.json?v=20261104-2')]);
  if(!template.ok||!patchResponse.ok)throw new Error('The application template could not load. Your answers are still here.');
  const doc=await PDFDocument.load(await template.arrayBuffer()),form=doc.getForm();
  const font=await doc.embedFont(StandardFonts.TimesRoman),bold=await doc.embedFont(StandardFonts.TimesRomanBold);
@@ -12,7 +12,7 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  function wrap(text,width,size=9){const result=[];for(const para of clean(text).split('\n')){if(!para){result.push('');continue;}let line='';for(const word of para.split(/\s+/)){if(font.widthOfTextAtSize((line?line+' ':'')+word,size)<=width){line+=(line?' ':'')+word;continue;}if(line){result.push(line);line='';}let rest=word;while(font.widthOfTextAtSize(rest,size)>width){let n=1;while(n<rest.length&&font.widthOfTextAtSize(rest.slice(0,n+1),size)<=width)n++;result.push(rest.slice(0,n));rest=rest.slice(n);}line=rest;}result.push(line);}return result;}
  function encode(text,label){try{font.encodeText(clean(text).replaceAll('\n',' '));}catch{throw new Error(`The answer for ${label} has a symbol this PDF cannot print. Replace emoji or unusual symbols and try again.`);}}
  for(const patch of await patchResponse.json()){
-  const page=doc.getPage(patch.page),value=patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?`A digital photo of the applicant should be emailed to: ${config.photoEmail}`:patch.kind==='destination'?`Submit this application and the required documents to: ${config.submissionEmail}`:`Deadline: ${config.deadline}`;
+  const page=doc.getPage(patch.page),value=patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='awardsYear'?`SCHOLARSHIP OR GRANT AWARDED FOR ${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?`A digital photo of the applicant should be emailed to: ${config.photoEmail}`:patch.kind==='destination'?'Complete and submit this application on the Foundation website.':`Deadline: ${config.deadline}`;
   const face=patch.bold?bold:font;encode(value,patch.kind);let size=patch.size;
   while(size>6.5&&face.widthOfTextAtSize(value,size)>patch.width)size-=.1;
   page.drawRectangle({x:patch.x,y:patch.y,width:patch.width,height:patch.height,color:rgb(1,1,1)});
@@ -21,7 +21,7 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  for(const f of fields.values())if(f instanceof PDFLib.PDFTextField){f.removeMaxLength();f.setFontSize(9);}
  function setText(name,value){const f=fields.get(name);if(!(f instanceof PDFLib.PDFTextField))return;let text=clean(value);encode(text,labels[name]||name.replaceAll('_',' '));const rect=f.acroField.getWidgets()[0].getRectangle();let size=9;
   if(f.isMultiline()){if(wrap(text,rect.width-5).length>Math.floor(rect.height/10)){overflow.push(`${labels[name]||name.replaceAll('_',' ')}: ${text}`);text='See Additional Information.';}}
-  else{while(size>7&&font.widthOfTextAtSize(text,size)>rect.width-5)size-=.25;if(font.widthOfTextAtSize(text,size)>rect.width-5){overflow.push(`${labels[name]||name.replaceAll('_',' ')}: ${text}`);text=rect.width<65?'*':'See addl. info.';size=7;}}
+  else if(font.widthOfTextAtSize(text,size)>rect.width-5){overflow.push(`${labels[name]||name.replaceAll('_',' ')}: ${text}`);text=rect.width<65?'*':'See addl. info.';}
   f.setFontSize(size);f.setText(text);
  }
  const paired=new Set([...fields.keys()].filter(n=>n.endsWith('_continued')).map(n=>n.slice(0,-10)));
@@ -50,15 +50,25 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  if(!blank){form.flatten();for(const page of doc.getPages())page.node.delete(PDFName.of('Annots'));doc.catalog.delete(PDFName.of('AcroForm'));}
  // Flattened empty-field appearances can be opaque. Paint signatures last.
  for(const {image,box} of drawnSignatures)doc.getPage(3).drawImage(image,box);
- // Append the approved cover's pages only after all indexed application/signature work.
- // The cover is the original reviewed document, never synthesized from website copy.
- if(blank){
+ // Prepend the reviewed original only after indexed application/signature work.
+ // Personalize a copy of its salutation; the master letter and body remain unchanged.
+ {
   const response=await fetch('cover-letter.pdf?v=20261102-5');
   if(!response.ok)throw new Error('The original cover letter could not load. Please try the download again.');
   const cover=await PDFDocument.load(await response.arrayBuffer());
+  if(!blank){
+   const name=clean(data.applicant_name).replaceAll('\n',' ').trim();
+   if(!name)throw new Error('Enter your full name before downloading your personalized application packet.');
+   const greeting=`Dear ${name},`,greetingLines=wrap(greeting,466,12);
+   if(greetingLines.length>2)throw new Error('Your full name needs more room on the cover letter. Contact the Foundation for help with your packet.');
+   const page=cover.getPage(0),coverFont=await cover.embedFont(StandardFonts.TimesRoman);
+   page.drawRectangle({x:71.5,y:613,width:469,height:17,color:rgb(1,1,1)});
+   greetingLines.forEach((line,i)=>page.drawText(line,{x:72.024,y:618-i*13,size:12,font:coverFont,color:rgb(0,0,0)}));
+  }
   const pages=await doc.copyPages(cover,cover.getPageIndices());
   pages.forEach((page,index)=>doc.insertPage(index,page));
  }
+ if(data.testApplication)for(const page of doc.getPages())page.drawText('TEST APPLICATION - FICTIONAL ANSWERS - DO NOT PROCESS',{x:52,y:12,size:8,font:bold,color:rgb(.65,.15,.1)});
  doc.catalog.delete(PDFName.of('StructTreeRoot'));doc.catalog.delete(PDFName.of('MarkInfo'));
  doc.setTitle(`${config.year} Fox Chapel Scholarship Application`);doc.setAuthor('Fox Chapel Golf Club Scholarship Foundation, Inc.');
  return doc.save();
