@@ -3,7 +3,7 @@ async function startApplication(config){
 window.applicationConfig=config;
 const year=config.year,academicYear=`${year}-${Number(year)+1}`;
 let coverAcknowledged=false;
-const coverVersion=config.coverLetterVersion||`${year}:fb561b6b3676ad81`;
+const coverVersion=config.coverLetterVersion||`${year}:51a129f1380bd820`;
 const coverCheck=document.getElementById('coverLetterAcknowledgment'),beginButton=document.getElementById('beginApplication');
 function requireCover(){if(!coverAcknowledged||!coverCheck.checked)throw new Error('Read and acknowledge the cover letter before continuing.');}
 coverCheck.onchange=()=>{beginButton.disabled=!coverCheck.checked;};

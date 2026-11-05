@@ -74,17 +74,17 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  // Prepend the reviewed original only after indexed application/signature work.
  // Personalize a copy of its salutation; the master letter and body remain unchanged.
  {
-  const response=await fetch('cover-letter.pdf?v=20261102-5');
+  const response=await fetch('cover-letter.pdf?v=20261104-letter-restored');
   if(!response.ok)throw new Error('The original cover letter could not load. Please try the download again.');
   const cover=await PDFDocument.load(await response.arrayBuffer());
   if(!blank){
    const name=clean(data.applicant_name).replaceAll('\n',' ').trim();
    if(!name)throw new Error('Enter your full name before downloading your personalized application packet.');
-   const greeting=`Dear ${name},`,greetingLines=wrap(greeting,466,12);
+   const greeting=`Dear ${name},`,greetingLines=wrap(greeting,466,11.04);
    if(greetingLines.length>2)throw new Error('Your full name needs more room on the cover letter. Contact the Foundation for help with your packet.');
    const page=cover.getPage(0),coverFont=await cover.embedFont(StandardFonts.TimesRoman);
    page.drawRectangle({x:71.5,y:613,width:469,height:17,color:rgb(1,1,1)});
-   greetingLines.forEach((line,i)=>page.drawText(line,{x:72.024,y:618-i*13,size:12,font:coverFont,color:rgb(0,0,0)}));
+   greetingLines.forEach((line,i)=>page.drawText(line,{x:72.024,y:619-i*13,size:11.04,font:coverFont,color:rgb(0,0,0)}));
   }
   const pages=await doc.copyPages(cover,cover.getPageIndices());
   pages.forEach((page,index)=>doc.insertPage(index,page));
