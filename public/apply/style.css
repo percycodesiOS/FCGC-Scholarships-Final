@@ -32,3 +32,8 @@ a, #recipients { overflow-wrap: anywhere; }
 #applicationReviewDialog{width:min(1100px,96vw);max-width:96vw;max-height:94vh;max-height:94dvh;padding:20px;border:1px solid var(--border);border-radius:12px;color:var(--ink);background:var(--paper)}
 .application-review-shell{display:flex;flex-direction:column;height:calc(94vh - 44px);height:calc(94dvh - 44px);min-height:280px}.application-review-shell h2{margin:0 0 8px}.application-review-shell p{margin:0 0 10px}.application-review-shell iframe{display:block;flex:1;min-height:120px;width:100%;border:1px solid var(--border);background:white}.review-actions{display:flex;gap:12px;flex-wrap:wrap;padding-top:14px}.review-actions button{flex:1}.review-actions .primary{width:auto;margin:0;font-size:15px}
 @media(max-width:600px){#applicationReviewDialog{padding:12px}.application-review-shell{height:calc(94vh - 28px);height:calc(94dvh - 28px)}.application-review-shell h2{font-size:23px}.application-review-shell p{font-size:13px}.review-actions{gap:8px}.review-actions button{padding:10px;font-size:13px}}
+
+/* V2 accessibility & scroll-containment hardening */
+dialog:modal{overscroll-behavior:contain}
+dialog::backdrop{overflow:hidden;overscroll-behavior:contain}
+#application input:user-invalid,#application textarea:user-invalid{border-bottom-color:#b32020;background:#fff8f8}

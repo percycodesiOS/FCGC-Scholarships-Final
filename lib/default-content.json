@@ -3,6 +3,9 @@
   "headline": "Promoting personal growth\nthrough higher education.",
   "intro": "Supporting the next chapter in education for Fox Chapel Golf Club employees, children of employees, and caddies.",
   "deadline": "Friday, June 18, 2027 · 4:30 p.m. EDT",
+  "deadlineIso": "2027-06-18T16:30",
+  "autoCloseAtDeadline": true,
+  "closedNotice": "The 2027 scholarship application deadline has passed. Thank you to everyone who applied.",
   "welcome": "Through the generosity of Club members, the Foundation helps eligible team members pursue post-secondary education. Scholarships are awarded for one year, and eligible applicants may reapply in later years.",
   "eligibility": [
     "Club employees must have commenced employment before January 1, 2027 and have completed a minimum of 160 hours of work since their start date.",
