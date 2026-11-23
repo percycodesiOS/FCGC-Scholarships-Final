@@ -53,7 +53,9 @@ export async function legacyV1AesGcmKey(): Promise<CryptoKey> {
   return crypto.subtle.importKey('raw', base64Decode(env.MAIL_ENCRYPTION_KEY), { name: 'AES-GCM' }, false, ['decrypt']);
 }
 
-export async function deriveHmacKey(purpose: 'submission-token' | 'rate-limit' | 'recipient-limit'): Promise<CryptoKey> {
+export async function deriveHmacKey(
+  purpose: 'submission-token' | 'rate-limit' | 'recipient-limit' | 'admin-session',
+): Promise<CryptoKey> {
   const baseKey = await importHkdfBaseKey();
   return crypto.subtle.deriveKey(
     { name: 'HKDF', hash: 'SHA-256', salt: HKDF_SALT, info: encoder.encode(`fcgc:${purpose}:v2`) },
@@ -62,6 +64,97 @@ export async function deriveHmacKey(purpose: 'submission-token' | 'rate-limit' |
     false,
     ['sign', 'verify'],
   );
+}
+
+export type AdminSessionPayload = {
+  email: string;
+  displayName: string;
+  provider: 'microsoft';
+  exp: number;
+};
+
+function hexEncode(buffer: ArrayBuffer): string {
+  return [...new Uint8Array(buffer)].map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+export async function signAdminSession(email: string, displayName: string, ttlMs = 12 * 60 * 60 * 1000): Promise<string> {
+  const payload: AdminSessionPayload = {
+    email: email.trim().toLowerCase(),
+    displayName: displayName.trim() || email.trim(),
+    provider: 'microsoft',
+    exp: Date.now() + ttlMs,
+  };
+  const encoded = base64Encode(encoder.encode(JSON.stringify(payload)))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
+  const sig = hexEncode(
+    await crypto.subtle.sign('HMAC', await deriveHmacKey('admin-session'), encoder.encode(encoded)),
+  );
+  return `${encoded}.${sig}`;
+}
+
+export async function verifyAdminSession(token: string | null | undefined): Promise<AdminSessionPayload | null> {
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length !== 2 || !/^[a-f0-9]{64}$/.test(parts[1])) return null;
+  const signature = Uint8Array.from(parts[1].match(/../g)!, (x) => parseInt(x, 16));
+  const ok = await crypto.subtle.verify(
+    'HMAC',
+    await deriveHmacKey('admin-session'),
+    signature,
+    encoder.encode(parts[0]),
+  );
+  if (!ok) return null;
+  try {
+    const padded = parts[0].replaceAll('-', '+').replaceAll('_', '/') + '='.repeat((4 - (parts[0].length % 4)) % 4);
+    const parsed = JSON.parse(new TextDecoder().decode(base64Decode(padded))) as Partial<AdminSessionPayload>;
+    if (
+      typeof parsed.email !== 'string' ||
+      !parsed.email ||
+      typeof parsed.exp !== 'number' ||
+      parsed.exp <= Date.now()
+    ) {
+      return null;
+    }
+    return {
+      email: parsed.email.trim().toLowerCase(),
+      displayName: typeof parsed.displayName === 'string' && parsed.displayName ? parsed.displayName : parsed.email,
+      provider: 'microsoft',
+      exp: parsed.exp,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validate uploaded applicant photo magic bytes (JPEG or PNG) server-side.
+ */
+export function validatePhotoBytes(
+  bytes: Uint8Array,
+  mimeType: string,
+): { ok: true; ext: 'jpg' | 'png'; contentType: 'image/jpeg' | 'image/png' } | { ok: false; reason: string } {
+  if (bytes.length < 100 || bytes.length > 5 * 1024 * 1024) {
+    return { ok: false, reason: 'Keep the uploaded applicant photo under 5 MB.' };
+  }
+  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const isPng =
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a;
+  if (isJpeg && (!mimeType || mimeType === 'image/jpeg' || mimeType === 'image/jpg')) {
+    return { ok: true, ext: 'jpg', contentType: 'image/jpeg' };
+  }
+  if (isPng && (!mimeType || mimeType === 'image/png')) {
+    return { ok: true, ext: 'png', contentType: 'image/png' };
+  }
+  return { ok: false, reason: 'Upload a valid JPG or PNG applicant photo.' };
 }
 
 /**
@@ -100,7 +193,9 @@ export function scanPdfForActiveContent(bytes: Uint8Array): { ok: true } | { ok:
     [/\/JavaScript\b/i, 'embedded JavaScript'],
     [/\/JS\s*(?:\(|<|\d+\s+\d+\s+R)/i, 'embedded JavaScript action'],
     [/\/Launch\b/i, 'external launch action'],
-    [/\/OpenAction\b/i, 'automatic open action'],
+    // Allow benign PDF viewer destination arrays like `/OpenAction [0 /XYZ ...]` used by FAFSA/college PDFs,
+    // while strictly blocking dictionary/indirect action dictionaries (`/OpenAction << ... >>` or `/OpenAction 5 0 R`).
+    [/\/OpenAction\s*(?:<<|\d+\s+\d+\s+R)/i, 'automatic executable open action'],
     [/\/AA\s*<</i, 'additional trigger action'],
     [/\/RichMedia\b/i, 'embedded rich media'],
     [/\/SubmitForm\b/i, 'remote form submission action'],
@@ -197,8 +292,10 @@ export function formatEasternDeadline(wallIso: string): string | null {
 
 /**
  * Fetch Metadata resource isolation (runs before auth/handlers on /api/*).
- * Blocks cross-site XSSI/CSRF requests while permitting the Microsoft Entra
- * OAuth top-level GET navigation callback.
+ * Blocks cross-site XSSI/CSRF requests while permitting:
+ * 1. Top-level GET OAuth navigations (/api/auth/microsoft and /api/mail/microsoft/callback)
+ * 2. Embedded student-facing requests from inside the official foxchapelgolfclub.org iframe
+ *    (where browsers label same-origin iframe fetches as Sec-Fetch-Site: cross-site).
  */
 export function checkFetchMetadata(request: Request): Response | null {
   const url = new URL(request.url);
@@ -207,16 +304,37 @@ export function checkFetchMetadata(request: Request): Response | null {
   const site = request.headers.get('sec-fetch-site');
   const mode = request.headers.get('sec-fetch-mode');
   const dest = request.headers.get('sec-fetch-dest');
+  const origin = request.headers.get('origin');
 
   if (!site) return null; // Non-browser / legacy client fallback
   if (site === 'same-origin' || site === 'none') return null;
 
-  // Permit Microsoft Entra OAuth redirect callback (top-level GET navigation).
+  // Permit Microsoft Entra OAuth start & redirect callback (top-level GET navigation).
   if (
-    url.pathname === '/api/mail/microsoft/callback' &&
+    (url.pathname === '/api/mail/microsoft/callback' || url.pathname === '/api/auth/microsoft') &&
     request.method === 'GET' &&
     mode === 'navigate' &&
     dest === 'document'
+  ) {
+    return null;
+  }
+
+  // Permit public student read endpoints inside the embedded foxchapelgolfclub.org iframe.
+  const isPublicStudentRead =
+    request.method === 'GET' &&
+    (url.pathname === '/api/application' ||
+      url.pathname === '/api/content' ||
+      url.pathname === '/api/cover-letter');
+  if (isPublicStudentRead && (!origin || origin === url.origin)) {
+    return null;
+  }
+
+  // Permit student application submission from inside an authorized same-origin iframe
+  // (handler also enforces strict Origin === url.origin, HMAC token, and single-use nonce).
+  if (
+    url.pathname === '/api/applications' &&
+    request.method === 'POST' &&
+    origin === url.origin
   ) {
     return null;
   }
@@ -231,19 +349,31 @@ export function checkFetchMetadata(request: Request): Response | null {
   });
 }
 
+const ALLOWED_EMBED_ANCESTORS = "'self' https://foxchapelgolfclub.org https://www.foxchapelgolfclub.org";
+
 /**
  * Attach defense-in-depth HTTP security headers across HTML, static assets, and APIs.
- * Allows same-origin blob: frames on /apply/* so the in-page PDF review modal works cleanly,
- * while preventing external clickjacking (frame-ancestors 'none' + X-Frame-Options: DENY).
+ * - Public pages (/ and /apply/*) allow framing EXCLUSIVELY by foxchapelgolfclub.org
+ *   so the Club website embed works cleanly while blocking every other site on the web.
+ * - Admin and API routes (/manage, /handoff, /api/*) remain strictly frame-ancestors 'none' + X-Frame-Options: DENY.
  */
 export function applySecurityHeaders(request: Request, response: Response): Response {
   const url = new URL(request.url);
   const headers = new Headers(response.headers);
 
+  const isAdminOrApi =
+    url.pathname.startsWith('/manage') ||
+    url.pathname.startsWith('/handoff') ||
+    url.pathname.startsWith('/api/');
+
   headers.set('X-Content-Type-Options', 'nosniff');
-  headers.set('X-Frame-Options', 'DENY');
+  if (isAdminOrApi) {
+    headers.set('X-Frame-Options', 'DENY');
+  } else {
+    headers.delete('X-Frame-Options');
+  }
   headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  headers.set('Cross-Origin-Resource-Policy', isAdminOrApi ? 'same-origin' : 'cross-origin');
   headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
@@ -266,6 +396,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
   const contentType = headers.get('content-type') || '';
   if (contentType.includes('text/html')) {
     const isApply = url.pathname.startsWith('/apply');
+    const frameAncestors = isAdminOrApi ? "frame-ancestors 'none'" : `frame-ancestors ${ALLOWED_EMBED_ANCESTORS}`;
     const csp = isApply
       ? [
           "default-src 'self'",
@@ -278,7 +409,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
           "object-src 'none'",
           "base-uri 'none'",
           "form-action 'self'",
-          "frame-ancestors 'none'",
+          frameAncestors,
         ].join('; ')
       : [
           "default-src 'self'",
@@ -291,7 +422,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
           "object-src 'none'",
           "base-uri 'none'",
           "form-action 'self'",
-          "frame-ancestors 'none'",
+          frameAncestors,
         ].join('; ');
     headers.set('Content-Security-Policy', csp);
   }

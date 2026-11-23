@@ -54,10 +54,33 @@ In live v17, `/manage` puts 14 raw inputs on one long page, uses multiline texta
    - **Mailing Address Footer Sync (`app/Scholarship.tsx`):** Editing the Foundation address now automatically updates the homepage footer too.
    - **Built-in Printable 1-Page "Committee & Club IT Security Fact Sheet":** Ready to print straight from `/manage` and hand to Kent and the Scholarship Committee.
 
-### Note on Long-Term Sign-In / Hosting Portability
-- Today `/manage` authenticates Janet (`jmacek3@gmail.com`) via **Sign in with ChatGPT** because the site runs on ChatGPT Sites (`*.chatgpt.site`).
-- That works great for your committee demo today, and Janet does **not** need a paid AI subscription to sign in.
-- **When the Club eventually attaches its own domain (e.g., `scholarships.foxchapelgolfclub.com`) or moves to Club-managed Cloudflare hosting:** swapping `app/chatgpt-auth.ts` for **Microsoft Entra ID sign-in** (using the exact same Club Entra app you already registered!) lets Janet manage the site with her existing Club email (`jmacek@foxchapelgolfclub.com`) — zero ChatGPT account required!
+### Note on Long-Term Sign-In / Hosting Portability (Built Into V2!)
+- **Club Microsoft 365 Sign-In (`/api/auth/microsoft`):** V2 adds native Microsoft 365 admin sign-in right alongside ChatGPT sign-in (with zero ChatGPT dependency once hosted on Cloudflare Workers!). It reuses the **exact existing Club Entra App Registration and `/api/mail/microsoft/callback` Redirect URI** using `User.Read` only (already consented!), signs an `HttpOnly; Secure; SameSite=Lax` HKDF-HMAC cookie (`__Secure-fcgc-admin`), and authorizes `jmacek@foxchapelgolfclub.com` plus optional `ADMIN_EMAILS` env vars.
+- **1-Click 2-Page Cover Letter PDF Upload (`/api/cover-letter`):** Editors can upload a replacement 2-page Cover Letter PDF directly from `/manage` (scanned with `scanPdfForActiveContent()` before saving to R2) or restore the built-in master PDF in 1 click—no developer needed for annual cover letter changes.
+- **Club Website (`foxchapelgolfclub.org/scholarships`) Iframe & Real-World Safety Tuning:**
+  - Public routes (`/` and `/apply/*`) allow framing **exclusively** for `https://foxchapelgolfclub.org` and `https://www.foxchapelgolfclub.org` (`CSP frame-ancestors`), while `/manage` and `/api/*` remain strictly `X-Frame-Options: DENY` + `frame-ancestors 'none'`.
+  - Daily rate limits tuned for Club Wi-Fi: **25/day per IP**, **3/day per student email**, **80/day global**.
+  - PDF active-content scanner permits benign FAFSA/college zoom arrays (`/OpenAction [3 0 R /FitH 792]`) while blocking all executable `/JavaScript`, `/JS`, `/Launch`, `/AA`, `/RichMedia`, `/SubmitForm`, and action-dictionary `/OpenAction <<...>>`.
+
+---
+
+## 4. Direct Applicant Photo Upload & Exact W. Parks (`wparks@foxchapelgolfclub.com`) Removal / Rollback Log
+
+Per the Club's request, applicants now upload their digital photo directly inside `/apply/` (auto-compressed cleanly in-browser to a crisp JPEG, embedded on a dedicated **Applicant Photo** page inside the flattened PDF packet, **and** attached as a standalone `.jpg` right alongside the PDF on the **same single email** to `scholarshipfoundation@foxchapelgolfclub.com` — **no CC to W. Parks**).
+
+**Exact files where `wparks@foxchapelgolfclub.com` was removed (for instant rollback if ever needed):**
+1. `lib/default-content.json` — set `photoEmail: ""` and updated checklist item #6 to inline upload.
+2. `lib/content.ts` — removed `photoEmail` from required form fields & `publicContentView()` (kept backward-compatible so legacy R2 saves load safely).
+3. `app/Scholarship.tsx` — updated `01 / GATHER` paragraph from separate email to inline photo upload.
+4. `public/apply/index.html` — added `#uploadPhoto` uploader/preview panel, updated `#finish` checklist, and updated screen-reader cover-letter bullet #6. *(Note: the baked binary `public/apply/cover-letter.pdf` and `cover-page-1.webp` still contain the original Word bullet until Mom uploads the updated 2-page Word PDF via the new Cover Letter Upload button in `/manage`!)*
+5. `public/apply/app.js` & `public/apply/attachments.js` — replaced Section 1 `photoEmail` line with inline upload note and added `window.FCGCPhoto` JPEG normalizer + FormData `photo` attachment.
+6. `public/apply/pdf.js` — replaced `patch.kind === 'photo'` text with `"Applicant digital photo uploaded with online application."` and appended dedicated Applicant Photo page when a photo is uploaded.
+7. `lib/mail.ts` & `app/api/applications/route.ts` — validated uploaded photo magic bytes (`validatePhotoBytes`), attached standalone `.jpg` on the same Foundation email, and replaced the W. Parks reminder in the student confirmation email (`lib/mail.ts`).
+8. `app/manage/Manager.tsx` & `v2-preview/mom-admin-v2-demo.html` — removed the `Digital photo email` field and replaced it with the **Official 2-Page Cover Letter PDF** upload card.
+
+**How to put W. Parks back if the Committee ever reverses course:**
+- Option 1 (no code change!): In `/manage → Edit website → Where completed applications are emailed`, simply add `wparks@foxchapelgolfclub.com` as a recipient chip so she receives the exact same complete email + attached `.jpg` automatically.
+- Option 2 (restore separate photo email): Restore `photoEmail` in the 8 files listed above (preserved in git commit `94ac51a` on this repo).
 
 ---
 

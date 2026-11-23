@@ -35,7 +35,15 @@ function formatEasternPreview(wallIso: string): string {
   return `${dayStr} · ${hour12}:${String(mm).padStart(2, '0')} ${period} ${isDst ? 'EDT' : 'EST'}`;
 }
 
-export default function Manager({ initial, name }: { initial: Content; name: string }) {
+export default function Manager({
+  initial,
+  name,
+  provider = 'microsoft',
+}: {
+  initial: Content;
+  name: string;
+  provider?: 'microsoft' | 'chatgpt';
+}) {
   const [tab, setTab] = useState<TabId>('overview');
   const [data, setData] = useState<Content>(initial);
   const [saved, setSaved] = useState<Content>(initial);
@@ -47,6 +55,11 @@ export default function Manager({ initial, name }: { initial: Content; name: str
   const [newRecipient, setNewRecipient] = useState('');
   const [mailConnected, setMailConnected] = useState<boolean | null>(null);
   const [history, setHistory] = useState<AuditEntry[]>([]);
+  const [coverMeta, setCoverMeta] = useState<{
+    custom: boolean;
+    meta: { uploadedAt: string; uploadedBy: string; filename: string; size: number } | null;
+  }>({ custom: false, meta: null });
+  const [coverBusy, setCoverBusy] = useState(false);
 
   const confirmDialogRef = useRef<HTMLDialogElement | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -69,9 +82,10 @@ export default function Manager({ initial, name }: { initial: Content; name: str
   }, [dirty]);
 
   async function loadDashboardMetadata() {
-    const [mailRes, histRes] = await Promise.all([
+    const [mailRes, histRes, coverRes] = await Promise.all([
       fetch('/api/mail', { cache: 'no-store' }),
       fetch('/api/history', { cache: 'no-store' }),
+      fetch('/api/cover-letter?meta=1', { cache: 'no-store' }),
     ]);
     if (mailRes.ok) {
       const m = (await mailRes.json()) as { connected?: boolean };
@@ -80,6 +94,55 @@ export default function Manager({ initial, name }: { initial: Content; name: str
     if (histRes.ok) {
       const h = (await histRes.json()) as { entries?: AuditEntry[] };
       setHistory(h.entries || []);
+    }
+    if (coverRes.ok) {
+      const c = (await coverRes.json()) as {
+        custom?: boolean;
+        meta?: { uploadedAt: string; uploadedBy: string; filename: string; size: number } | null;
+      };
+      setCoverMeta({ custom: !!c.custom, meta: c.meta || null });
+    }
+  }
+
+  async function uploadCoverLetter(file: File | undefined) {
+    if (!file) return;
+    setCoverBusy(true);
+    setMessage('');
+    try {
+      const body = new FormData();
+      body.append('pdf', file);
+      const res = await fetch('/api/cover-letter', { method: 'POST', body });
+      const out = (await res.json()) as {
+        custom?: boolean;
+        meta?: { uploadedAt: string; uploadedBy: string; filename: string; size: number } | null;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(out.error || 'Could not upload cover letter PDF.');
+      setCoverMeta({ custom: !!out.custom, meta: out.meta || null });
+      setMessage('New 2-page cover letter PDF uploaded and active immediately.');
+      setMessageKind('ok');
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Could not upload cover letter PDF.');
+      setMessageKind('err');
+    } finally {
+      setCoverBusy(false);
+    }
+  }
+
+  async function revertCoverLetter() {
+    setCoverBusy(true);
+    setMessage('');
+    try {
+      const res = await fetch('/api/cover-letter', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Could not restore the built-in cover letter.');
+      setCoverMeta({ custom: false, meta: null });
+      setMessage('Restored the built-in master cover letter PDF.');
+      setMessageKind('ok');
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Could not restore the built-in cover letter.');
+      setMessageKind('err');
+    } finally {
+      setCoverBusy(false);
     }
   }
 
@@ -257,20 +320,31 @@ export default function Manager({ initial, name }: { initial: Content; name: str
   }
 
   return (
-    <div className="manager">
+    <div className="v2-admin-shell">
+      <div className="v2-admin-ribbon" role="region" aria-label="Admin workspace indicator">
+        <span>
+          <span className="v2-admin-pill">Admin Mode</span> Private Foundation Control Center — Not visible to scholarship applicants
+        </span>
+        <span>
+          {provider === 'microsoft' ? 'Signed in via Club Microsoft 365' : 'Signed in via ChatGPT'}
+        </span>
+      </div>
+      <div className="manager">
       <header className="manager-top">
         <a href="/" target="_blank" rel="noopener">
           ← View live website
         </a>
-        <span>Signed in as {name}</span>
-        <a href="/signout-with-chatgpt?return_to=/" target="_top">
+        <span>
+          Signed in as {name} ({provider === 'microsoft' ? 'Club Microsoft 365' : 'ChatGPT'})
+        </span>
+        <a href={provider === 'microsoft' ? '/api/auth/logout' : '/signout-with-chatgpt?return_to=/'} target="_top">
           Sign out
         </a>
       </header>
 
       <div className="manager-title">
         <div>
-          <p className="eyebrow">FOX CHAPEL SCHOLARSHIP FOUNDATION · OWNER CONTROL CENTER</p>
+          <p className="eyebrow">FOX CHAPEL GOLF CLUB · SCHOLARSHIP FOUNDATION CONTROL CENTER</p>
           <h1>Manage scholarship</h1>
           <p>No coding or AI needed. Choose a task below, preview your changes, and publish when ready.</p>
         </div>
@@ -694,14 +768,48 @@ export default function Manager({ initial, name }: { initial: Content; name: str
                       onChange={(e) => setData((cur) => ({ ...cur, phone: e.target.value }))}
                     />
                   </label>
-                  <label className="editor-field">
-                    Digital photo email
-                    <input
-                      type="email"
-                      value={data.photoEmail}
-                      onChange={(e) => setData((cur) => ({ ...cur, photoEmail: e.target.value }))}
-                    />
-                  </label>
+                </div>
+
+                <div className="v2-recipients-box" style={{ marginBottom: '18px' }}>
+                  <h3>Official 2-Page Cover Letter PDF</h3>
+                  <p className="fine">
+                    {coverMeta.custom && coverMeta.meta
+                      ? `Custom PDF active: ${coverMeta.meta.filename} (uploaded ${new Date(coverMeta.meta.uploadedAt).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} by ${coverMeta.meta.uploadedBy}).`
+                      : 'Currently using the built-in 2-page Foundation cover letter PDF. Upload a new PDF anytime (e.g., for next year’s rollover or wording updates) without touching code.'}
+                  </p>
+                  <div className="v2-button-row">
+                    <label className="button secondary" style={{ cursor: 'pointer' }}>
+                      {coverBusy ? 'Uploading…' : 'Upload new cover letter PDF'}
+                      <input
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        hidden
+                        disabled={coverBusy}
+                        onChange={(e) => {
+                          void uploadCoverLetter(e.target.files?.[0]);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                    <a
+                      className="button secondary"
+                      href={coverMeta.custom ? '/api/cover-letter' : '/apply/cover-letter.pdf'}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Open current PDF ↗
+                    </a>
+                    {coverMeta.custom && (
+                      <button
+                        type="button"
+                        className="secondary v2-danger-outline"
+                        disabled={coverBusy}
+                        onClick={() => void revertCoverLetter()}
+                      >
+                        Restore original master
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <label className="editor-field">
@@ -901,6 +1009,7 @@ export default function Manager({ initial, name }: { initial: Content; name: str
           </form>
         </div>
       </dialog>
+      </div>
     </div>
   );
 }

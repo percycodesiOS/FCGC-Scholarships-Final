@@ -1,3 +1,4 @@
+import { env } from 'cloudflare:workers';
 import { readContent } from '../../../lib/store';
 import { mailStatus } from '../../../lib/mail';
 import { makeToken } from '../../../lib/submission';
@@ -15,6 +16,13 @@ export async function GET() {
     connected = (await mailStatus()).connected;
   } catch {
     connected = false;
+  }
+
+  let customCoverLetter = false;
+  try {
+    customCoverLetter = !!(await env.BUCKET?.head('scholarship/cover-letter/current.pdf'));
+  } catch {
+    customCoverLetter = false;
   }
 
   const deadlinePassed = isDeadlinePassed(content.deadlineIso, content.autoCloseAtDeadline);
@@ -36,7 +44,7 @@ export async function GET() {
       deadlinePassed,
       closedReason,
       closedNotice: content.closedNotice,
-      photoEmail: content.photoEmail,
+      customCoverLetter,
       submissionEmail: recipients[0],
       submissionRecipients: recipients,
       revision: content.revision,

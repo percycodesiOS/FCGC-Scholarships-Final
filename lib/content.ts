@@ -10,7 +10,6 @@ export const fields = [
   'welcome',
   'email',
   'phone',
-  'photoEmail',
   'address',
   'notice',
   'closedNotice',
@@ -24,7 +23,6 @@ const fieldNames: Record<(typeof fields)[number], string> = {
   welcome: 'About the scholarship',
   email: 'Contact email',
   phone: 'Front office phone',
-  photoEmail: 'Photo email',
   address: 'Foundation mailing address',
   notice: 'Open announcement banner',
   closedNotice: 'Closed announcement banner',
@@ -87,11 +85,10 @@ export function validate(value: unknown): Content {
   out.deadlineIso = deadlineIso;
   out.autoCloseAtDeadline = v.autoCloseAtDeadline === true;
 
-  for (const key of ['email', 'photoEmail'] as const) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(out[key] as string)) {
-      throw new Error(`Enter a valid email address for "${fieldNames[key]}".`);
-    }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(out.email as string)) {
+    throw new Error(`Enter a valid email address for "${fieldNames.email}".`);
   }
+  out.photoEmail = '';
 
   // Automatically strip accidental blank lines so non-technical editors are never blocked by extra Enters.
   for (const key of ['eligibility', 'requirements'] as const) {
@@ -158,7 +155,6 @@ export function describeContentChanges(previous: Content, next: Content): string
   if (previous.welcome !== next.welcome) changes.push('Updated "About the scholarship" text');
   if (previous.email !== next.email) changes.push(`Contact email: ${previous.email} -> ${next.email}`);
   if (previous.phone !== next.phone) changes.push(`Front office phone: ${previous.phone} -> ${next.phone}`);
-  if (previous.photoEmail !== next.photoEmail) changes.push(`Photo email: ${previous.photoEmail} -> ${next.photoEmail}`);
   if (previous.address !== next.address) changes.push('Updated Foundation mailing address');
   if (JSON.stringify(previous.eligibility) !== JSON.stringify(next.eligibility)) {
     changes.push(`Eligibility list updated (${next.eligibility.length} items)`);
@@ -189,7 +185,6 @@ export function publicContentView(content: Content) {
     requirements: content.requirements,
     email: content.email,
     phone: content.phone,
-    photoEmail: content.photoEmail,
     address: content.address,
     notice: content.notice,
     closedNotice: content.closedNotice,

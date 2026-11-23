@@ -10,7 +10,7 @@ import {
   verifyAndExtractToken,
 } from '../../../lib/submission';
 import { coverLetterVersion } from '../../../lib/application-policy';
-import { isDeadlinePassed, scanPdfForActiveContent } from '../../../lib/security';
+import { isDeadlinePassed, scanPdfForActiveContent, validatePhotoBytes } from '../../../lib/security';
 
 export const dynamic = 'force-dynamic';
 const headers = { 'Cache-Control': 'no-store' };
@@ -114,6 +114,18 @@ export async function POST(request: Request) {
       throw new Error(pdfScan.reason);
     }
 
+    // Validate optional standalone applicant photo (compressed JPG/PNG uploaded with application).
+    let validatedPhoto: { bytes: Uint8Array; ext: 'jpg' | 'png'; contentType: 'image/jpeg' | 'image/png' } | null = null;
+    const rawPhoto = form.get('photo');
+    if (rawPhoto instanceof File && rawPhoto.size > 0) {
+      const photoBytes = new Uint8Array(await rawPhoto.arrayBuffer());
+      const photoCheck = validatePhotoBytes(photoBytes, rawPhoto.type);
+      if (!photoCheck.ok) {
+        throw new Error(photoCheck.reason);
+      }
+      validatedPhoto = { bytes: photoBytes, ext: photoCheck.ext, contentType: photoCheck.contentType };
+    }
+
     const digest = await hash(bytes);
     receiptPath = 'scholarship/private/receipts/' + id;
     const existing = await env.BUCKET.get(receiptPath);
@@ -174,9 +186,9 @@ export async function POST(request: Request) {
         name,
         email,
         recipients: content.submissionRecipients,
-        photoEmail: content.photoEmail,
         deadline: content.deadline,
         testApplication,
+        photo: validatedPhoto,
       },
       async (draftId) => {
         receipt!.draftId = draftId;

@@ -93,9 +93,9 @@ async function incrementCounter(path: string, maxPerDay: number): Promise<boolea
 
 /**
  * Three-layer anti-abuse rate limiting (all privacy-preserving via keyed HMAC):
- * 1. Per-IP daily limit (max 8/day)
+ * 1. Per-IP daily limit (max 25/day — generous enough for caddies/staff sharing Club Wi-Fi on deadline day)
  * 2. Per-applicant-email daily limit (max 3/day) to block email-bombing third-party addresses
- * 3. Global daily circuit breaker (max 60/day) to protect the Club's M365 mailbox quota
+ * 3. Global daily circuit breaker (max 80/day) to protect the Club's M365 mailbox quota
  */
 export async function allowSubmission(ip: string, applicantEmail?: string): Promise<{
   allowed: boolean;
@@ -107,7 +107,7 @@ export async function allowSubmission(ip: string, applicantEmail?: string): Prom
   const ipDigest = hex(
     await crypto.subtle.sign('HMAC', await deriveHmacKey('rate-limit'), encoder.encode(ip)),
   );
-  if (!(await incrementCounter(`scholarship/private/rate/${day}/${ipDigest}`, 8))) {
+  if (!(await incrementCounter(`scholarship/private/rate/${day}/${ipDigest}`, 25))) {
     return { allowed: false, reason: 'ip-limit' };
   }
 
@@ -124,14 +124,14 @@ export async function allowSubmission(ip: string, applicantEmail?: string): Prom
     }
   }
 
-  if (!(await incrementCounter(`scholarship/private/global-rate/${day}`, 60))) {
+  if (!(await incrementCounter(`scholarship/private/global-rate/${day}`, 80))) {
     return { allowed: false, reason: 'global-limit' };
   }
 
   return { allowed: true };
 }
 
-export async function boundedForm(request: Request, limit = 22 * 1024 * 1024) {
+export async function boundedForm(request: Request, limit = 27 * 1024 * 1024) {
   if (Number(request.headers.get('content-length') || 0) > limit || !request.body) {
     throw new Error('The application is too large. Keep the completed PDF below 20 MB.');
   }

@@ -1,6 +1,6 @@
 'use strict';
 // PDF creation stays on the applicant's device. Settings are read from the live admin configuration.
-window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
+window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=null}={}){
  data=FCGCAnswers.normalize(data);
  const {PDFDocument,StandardFonts,PDFName,rgb}=PDFLib;
  const [template,patchResponse]=await Promise.all([fetch('application.pdf?v=20261102-2'),fetch('pdf-settings.json?v=20261104-review')]);
@@ -12,11 +12,11 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
  function wrap(text,width,size=9){const result=[];for(const para of clean(text).split('\n')){if(!para){result.push('');continue;}let line='';for(const word of para.split(/\s+/)){if(font.widthOfTextAtSize((line?line+' ':'')+word,size)<=width){line+=(line?' ':'')+word;continue;}if(line){result.push(line);line='';}let rest=word;while(font.widthOfTextAtSize(rest,size)>width){let n=1;while(n<rest.length&&font.widthOfTextAtSize(rest.slice(0,n+1),size)<=width)n++;result.push(rest.slice(0,n));rest=rest.slice(n);}line=rest;}result.push(line);}return result;}
  function encode(text,label){try{font.encodeText(clean(text).replaceAll('\n',' '));}catch{throw new Error(`The answer for ${label} has a symbol this PDF cannot print. Replace emoji or unusual symbols and try again.`);}}
  for(const patch of await patchResponse.json()){
-  const page=doc.getPage(patch.page),value=patch.kind==='footer'?`March ${config.year}`:patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='awardsYear'?`SCHOLARSHIP OR GRANT AWARDED FOR ${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?`A digital photo of the applicant should be emailed to: ${config.photoEmail}`:patch.kind==='destination'?'Complete and submit this application on the Foundation website.':`Deadline: ${config.deadline}`;
+  const page=doc.getPage(patch.page),value=patch.kind==='footer'?`March ${config.year}`:patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='awardsYear'?`SCHOLARSHIP OR GRANT AWARDED FOR ${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?'Applicant digital photo uploaded with online application.':patch.kind==='destination'?'Complete and submit this application on the Foundation website.':`Deadline: ${config.deadline}`;
   const face=patch.bold?bold:font;encode(value,patch.kind);let size=patch.size;
   while(size>6.5&&face.widthOfTextAtSize(value,size)>patch.width)size-=.1;
   page.drawRectangle({x:patch.x,y:patch.y,width:patch.width,height:patch.height,color:rgb(1,1,1)});
-  page.drawText(value,{x:patch.x+.5,y:patch.baseline??patch.y+2,size,font:face,color:patch.kind==='photo'?rgb(.75,0,0):rgb(0,0,0)});
+  page.drawText(value,{x:patch.x+.5,y:patch.baseline??patch.y+2,size,font:face,color:patch.kind==='photo'?rgb(.08,.24,.2):rgb(0,0,0)});
  }
  for(const f of fields.values())if(f instanceof PDFLib.PDFTextField){
   f.removeMaxLength();f.setFontSize(9);
@@ -77,10 +77,23 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={}}={}){
 
  // Flattened empty-field appearances can be opaque. Paint signatures last.
  for(const {image,box} of drawnSignatures)doc.getPage(3).drawImage(image,box);
- // Prepend the reviewed original only after indexed application/signature work.
+ // If the applicant uploaded a digital photo, include a clean dedicated Applicant Photo page in the PDF packet.
+ if(applicantPhoto?.bytes){
+  const embedded=await doc.embedJpg(applicantPhoto.bytes);
+  const photoPage=doc.addPage([612,792]);
+  const titleName=clean(data.applicant_name||'Applicant').replaceAll('\n',' ').trim()||'Applicant';
+  photoPage.drawText('FOX CHAPEL GOLF CLUB SCHOLARSHIP FOUNDATION',{x:54,y:736,size:10,font:bold,color:rgb(.64,.54,.33)});
+  photoPage.drawText(`${config.year} Applicant Photo — ${titleName}`.slice(0,80),{x:54,y:714,size:16,font:bold,color:rgb(.08,.24,.2)});
+  const fit=embedded.scaleToFit(420,520);
+  const px=(612-fit.width)/2,py=140+(520-fit.height)/2;
+  photoPage.drawRectangle({x:px-6,y:py-6,width:fit.width+12,height:fit.height+12,borderColor:rgb(.82,.82,.77),borderWidth:1,color:rgb(.98,.97,.95)});
+  photoPage.drawImage(embedded,{x:px,y:py,width:fit.width,height:fit.height});
+ }
+ // Prepend the reviewed original (or admin-uploaded replacement) only after indexed application/signature work.
  // Personalize a copy of its salutation; the master letter and body remain unchanged.
  {
-  const response=await fetch('cover-letter.pdf?v=20261104-letter-restored');
+  let response=config.customCoverLetter?await fetch('/api/cover-letter',{cache:'no-store'}):null;
+  if(!response||!response.ok)response=await fetch('cover-letter.pdf?v=20261104-letter-restored');
   if(!response.ok)throw new Error('The original cover letter could not load. Please try the download again.');
   const cover=await PDFDocument.load(await response.arrayBuffer());
   if(!blank){

@@ -167,7 +167,8 @@ export default function Scholarship({
                 in the application.
               </p>
               <p>
-                Email your digital photo separately to <a href={'mailto:' + d.photoEmail}>{d.photoEmail}</a>.
+                Upload a digital photo of the applicant directly inside the online application — everything is delivered
+                together in one submission.
               </p>
             </article>
             <ul className="requirements">

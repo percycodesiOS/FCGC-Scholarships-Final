@@ -19,9 +19,35 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--cream);
+      background: #efede5;
       color: var(--ink);
       font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .admin-ribbon {
+      background: #122b25;
+      color: #eef3ee;
+      border-top: 4px solid #a48954;
+      border-bottom: 1px solid rgba(164, 137, 84, 0.45);
+      padding: 9px 24px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .admin-pill {
+      display: inline-block;
+      background: rgba(164, 137, 84, 0.22);
+      border: 1px solid rgba(217, 188, 130, 0.55);
+      color: #f0d8a3;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-right: 8px;
     }
     .demo-banner {
       background: #102f29;
@@ -149,11 +175,15 @@
   </div>
 
   <div class="shell">
+    <div class="admin-ribbon no-print" style="margin:-24px -24px 22px;border-radius:0 0 6px 6px">
+      <span><span class="admin-pill">Admin Mode</span> Private Foundation Control Center — Not visible to scholarship applicants</span>
+      <span style="color:#d7e3dc">Club Microsoft 365 Sign-In Ready (Zero ChatGPT Dependency)</span>
+    </div>
     <div class="header-row">
       <div>
-        <p class="eyebrow">FOX CHAPEL SCHOLARSHIP FOUNDATION · OWNER CONTROL CENTER (V2 PREVIEW)</p>
+        <p class="eyebrow">FOX CHAPEL GOLF CLUB · SCHOLARSHIP FOUNDATION CONTROL CENTER</p>
         <h1>Manage scholarship</h1>
-        <p style="margin:0;color:var(--muted)">Built for Janet — zero coding, zero AI required. Every edit shows a live preview and keeps an automatic Undo copy.</p>
+        <p style="margin:0;color:var(--muted)">Zero coding, zero AI required · Signed in with Club Microsoft 365 (zero ChatGPT account needed). Every edit shows a live preview and keeps an automatic Undo copy.</p>
       </div>
       <div class="btn-row no-print">
         <button type="button" class="secondary" id="togglePreviewBtn">Preview website</button>
@@ -210,9 +240,9 @@
       intro: 'Supporting the next chapter in education for Fox Chapel Golf Club employees, children of employees, and caddies.',
       email: 'scholarshipfoundation@foxchapelgolfclub.com',
       phone: '(412) 967-9081',
-      photoEmail: 'wparks@foxchapelgolfclub.com',
       address: 'Fox Chapel Golf Club Scholarship Foundation, Inc.\n426 Fox Chapel Road\nPittsburgh, PA 15238',
       submissionRecipients: ['scholarshipfoundation@foxchapelgolfclub.com'],
+      customCoverLetterName: '',
       eligibility: [
         'Club employees must have commenced employment before January 1, 2027 and have completed a minimum of 160 hours of work since their start date.',
         'Caddies must have completed a minimum of 15 rounds (preferably 20) during 2026 and trending toward completing at least 15 rounds (preferably 20) in 2027.',
@@ -224,7 +254,7 @@
         'A personal essay of 1–2 pages about your educational and career goals, how this scholarship would help, and significant experiences that have shaped your aspirations.',
         'The first two pages of your FAFSA summary, if submitted.',
         'Your school’s financial aid estimate for one full academic year.',
-        'A digital photo of the applicant.'
+        'A digital photo of the applicant (uploaded directly with the online application).'
       ]
     };
 
@@ -296,7 +326,9 @@
       if (saved.closedNotice !== draft.closedNotice) list.push('Updated closed banner wording');
       if (saved.email !== draft.email) list.push(`Contact email: ${draft.email}`);
       if (saved.phone !== draft.phone) list.push(`Front office phone: ${draft.phone}`);
-      if (saved.photoEmail !== draft.photoEmail) list.push(`Photo email: ${draft.photoEmail}`);
+      if ((saved.customCoverLetterName || '') !== (draft.customCoverLetterName || '')) {
+        list.push(draft.customCoverLetterName ? `Cover letter PDF replaced with ${draft.customCoverLetterName}` : 'Restored built-in 2-page cover letter PDF');
+      }
       if (saved.address !== draft.address) list.push('Updated Foundation mailing address (synced to footer)');
       if (JSON.stringify(saved.eligibility) !== JSON.stringify(draft.eligibility)) list.push(`Eligibility updated (${draft.eligibility.length} items)`);
       if (JSON.stringify(saved.requirements) !== JSON.stringify(draft.requirements)) list.push(`Checklist updated (${draft.requirements.length} items)`);
@@ -360,7 +392,7 @@
             el('div', {},
               el('h3', {}, 'Required documents'),
               el('ul', {}, draft.requirements.map(item => el('li', {}, item))),
-              el('p', { className: 'fine' }, `Photo email: ${draft.photoEmail} · Footer address synced: ${footerAddr}`)
+              el('p', { className: 'fine' }, `Photos uploaded inline (1 clean email to Foundation) · Footer address synced: ${footerAddr}`)
             )
           )
         )
@@ -470,11 +502,27 @@
           renderListEditor('requirements', 'Required checklist', () => '✓')
         ),
         el('section', { className: 'card' },
-          el('h2', {}, '3. Contact details & recipients'),
-          el('div', { className: 'grid-3' },
+          el('h2', {}, '3. Contact details, cover letter PDF & recipients'),
+          el('div', { className: 'grid-2' },
             el('label', { className: 'field' }, 'Contact email', el('input', { type: 'email', value: draft.email, onInput: e => { draft.email = e.target.value; syncTopBar(); } })),
-            el('label', { className: 'field' }, 'Front office phone', el('input', { value: draft.phone, onInput: e => { draft.phone = e.target.value; syncTopBar(); } })),
-            el('label', { className: 'field' }, 'Photo email', el('input', { type: 'email', value: draft.photoEmail, onInput: e => { draft.photoEmail = e.target.value; syncTopBar(); } }))
+            el('label', { className: 'field' }, 'Front office phone', el('input', { value: draft.phone, onInput: e => { draft.phone = e.target.value; syncTopBar(); } }))
+          ),
+          el('div', { style: 'background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:16px;margin:14px 0 18px' },
+            el('strong', { style: 'display:block;margin-bottom:4px' }, 'Official 2-Page Cover Letter PDF'),
+            el('p', { className: 'fine', style: 'margin:0 0 10px' }, draft.customCoverLetterName
+              ? `Custom PDF selected (demo): ${draft.customCoverLetterName} — scanned for PDF security before saving.`
+              : 'Currently using the built-in 2-page Foundation cover letter PDF. Upload a new PDF anytime (for wording updates or next year’s rollover) with zero coding.'),
+            el('div', { className: 'btn-row' },
+              el('label', { className: 'btn secondary', style: 'cursor:pointer' },
+                'Upload new cover letter PDF',
+                el('input', { type: 'file', accept: 'application/pdf,.pdf', hidden: true, onChange: e => {
+                  const f = e.target.files?.[0];
+                  if (f) { draft.customCoverLetterName = f.name; showBanner(`Selected "${f.name}" as your new 2-page cover letter PDF (demo). Click "Publish changes" to apply.`); render(); }
+                  e.target.value = '';
+                } })
+              ),
+              draft.customCoverLetterName ? el('button', { type: 'button', className: 'danger', onClick: () => { draft.customCoverLetterName = ''; showBanner('Reverted to the built-in master cover letter PDF (demo).'); render(); } }, 'Restore original master') : null
+            )
           ),
           el('label', { className: 'field' }, 'Foundation mailing address (automatically synced to website footer)',
             el('textarea', { rows: 3, value: draft.address, onInput: e => { draft.address = e.target.value; syncTopBar(); } })

@@ -9,6 +9,7 @@ import {
 const encoder = new TextEncoder();
 export const mailScopes =
   'offline_access https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.ReadWrite https://graph.microsoft.com/Mail.Send.Shared';
+export const adminSignInScopes = 'openid profile email https://graph.microsoft.com/User.Read';
 export const connectionKey = 'scholarship/private/microsoft-connection';
 export const setupKey = 'scholarship/private/microsoft-setup';
 
@@ -153,7 +154,7 @@ export async function startMicrosoft(origin: string, userId: string) {
 
   await storePrivate(
     'scholarship/private/oauth/' + state,
-    { verifier, userId, origin, created: Date.now() },
+    { purpose: 'mail-connect', verifier, userId, origin, created: Date.now() },
     'oauth-state',
   );
   const parameters = new URLSearchParams({
@@ -171,6 +172,105 @@ export async function startMicrosoft(origin: string, userId: string) {
     url: `https://login.microsoftonline.com/${setup.tenant}/oauth2/v2.0/authorize?${parameters}`,
     state,
   };
+}
+
+/**
+ * Start Club Microsoft 365 admin sign-in for /manage (zero ChatGPT dependency).
+ * Reuses the existing Club Entra App Registration and registered callback URI
+ * with only User.Read (already consented), so no extra IT approval is required.
+ */
+export async function startMicrosoftAdminLogin(origin: string) {
+  const setup = await readPrivate<Setup>(setupKey);
+  if (!setup) {
+    throw new Error('Club Microsoft 365 sign-in is not configured yet.');
+  }
+  const state = crypto.randomUUID();
+  const verifier = randomToken();
+  const challenge = base64Encode(
+    new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))),
+  )
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
+
+  await storePrivate(
+    'scholarship/private/oauth/' + state,
+    { purpose: 'admin-login', verifier, origin, created: Date.now() },
+    'oauth-state',
+  );
+  const parameters = new URLSearchParams({
+    client_id: setup.clientId,
+    response_type: 'code',
+    redirect_uri: origin + '/api/mail/microsoft/callback',
+    response_mode: 'query',
+    scope: adminSignInScopes,
+    state,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    prompt: 'select_account',
+  });
+  return {
+    url: `https://login.microsoftonline.com/${setup.tenant}/oauth2/v2.0/authorize?${parameters}`,
+    state,
+  };
+}
+
+export async function peekMicrosoftOAuthPurpose(
+  state: string,
+): Promise<'admin-login' | 'mail-connect' | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(state)) return null;
+  const record = await readPrivate<{ purpose?: 'admin-login' | 'mail-connect' }>(
+    'scholarship/private/oauth/' + state,
+    'oauth-state',
+  );
+  if (!record) return null;
+  return record.purpose === 'admin-login' ? 'admin-login' : 'mail-connect';
+}
+
+export async function completeMicrosoftAdminLogin(
+  code: string,
+  state: string,
+  origin: string,
+): Promise<{ email: string; displayName: string }> {
+  if (!/^[0-9a-f-]{36}$/i.test(state)) throw new Error('Invalid sign-in state.');
+  const key = 'scholarship/private/oauth/' + state;
+  const record = await readPrivate<{
+    purpose?: string;
+    verifier: string;
+    origin: string;
+    created: number;
+  }>(key, 'oauth-state');
+  if (
+    !record ||
+    record.purpose !== 'admin-login' ||
+    record.origin !== origin ||
+    Date.now() - record.created > 600000
+  ) {
+    throw new Error('The Microsoft sign-in session expired. Try signing in again.');
+  }
+  await env.BUCKET?.delete(key);
+  const token = await exchange(
+    new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: origin + '/api/mail/microsoft/callback',
+      code_verifier: record.verifier,
+      scope: adminSignInScopes,
+    }),
+  );
+  const response = await fetch(
+    'https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',
+    { headers: { Authorization: 'Bearer ' + token.access_token } },
+  );
+  if (!response.ok) throw new Error('Microsoft account identity could not be verified.');
+  const profile = (await response.json()) as {
+    mail?: string;
+    userPrincipalName?: string;
+    displayName?: string;
+  };
+  const email = (profile.mail || profile.userPrincipalName || '').trim().toLowerCase();
+  if (!email) throw new Error('Microsoft did not return an email address for this account.');
+  return { email, displayName: (profile.displayName || email).trim() };
 }
 
 async function exchange(parameters: URLSearchParams) {
@@ -327,9 +427,13 @@ export async function sendApplication(
     name: string;
     email: string;
     recipients: string[];
-    photoEmail: string;
     deadline: string;
     testApplication?: boolean;
+    photo?: {
+      bytes: Uint8Array;
+      ext: 'jpg' | 'png';
+      contentType: 'image/jpeg' | 'image/png';
+    } | null;
   },
   onDraft: (id: string) => Promise<void>,
 ) {
@@ -340,6 +444,9 @@ export async function sendApplication(
   const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
   const filename = `${info.year}-Scholarship-Application-${info.id.slice(0, 8)}.pdf`;
   const testPrefix = info.testApplication ? '[TEST - FICTIONAL APPLICATION] ' : '';
+  const photoLine = info.photo
+    ? 'The applicant’s digital photo is included both inside the PDF packet and as a standalone image attachment on this email.'
+    : 'No separate applicant photo file was attached (check the application for any explanation).';
   const message = {
     from: { emailAddress: { address: setup.fromEmail } },
     subject: `${testPrefix}${info.year} Scholarship Application - ${info.name}`,
@@ -349,7 +456,7 @@ export async function sendApplication(
         info.testApplication
           ? 'TEST ONLY. This is a fictional demonstration. Do not process it as a scholarship application.\n\n'
           : ''
-      }A completed scholarship application is attached.\nApplicant: ${info.name}\nApplicant email: ${info.email}\nReference: ${info.id}\n\nThe attached PDF includes the cover letter, application, electronic signatures and the supporting documents selected by the applicant. This email does not indicate a scholarship decision.`,
+      }A completed scholarship application is attached.\nApplicant: ${info.name}\nApplicant email: ${info.email}\nReference: ${info.id}\n\nThe attached PDF includes the cover letter, application, electronic signatures, and supporting documents selected by the applicant. ${photoLine}\n\nThis email does not indicate a scholarship decision.`,
     },
     toRecipients: info.recipients.map((address) => ({ emailAddress: { address } })),
     replyTo: [{ emailAddress: { address: info.email } }],
@@ -366,23 +473,23 @@ export async function sendApplication(
   const { id } = (await draft.json()) as { id: string };
   await onDraft(id);
 
-  let attached = false;
-  if (pdf.length < 2900000) {
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(id)}/attachments`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          '@odata.type': '#microsoft.graph.fileAttachment',
-          name: filename,
-          contentType: 'application/pdf',
-          contentBytes: base64Encode(pdf),
-        }),
-      },
-    );
-    attached = response.ok;
-  } else {
+  async function uploadGraphAttachment(bytes: Uint8Array, name: string, contentType: string): Promise<boolean> {
+    if (bytes.length < 2900000) {
+      const response = await fetch(
+        `https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(id)}/attachments`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name,
+            contentType,
+            contentBytes: base64Encode(bytes),
+          }),
+        },
+      );
+      return response.ok;
+    }
     const session = await fetch(
       `https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(id)}/attachments/createUploadSession`,
       {
@@ -391,43 +498,56 @@ export async function sendApplication(
         body: JSON.stringify({
           AttachmentItem: {
             attachmentType: 'file',
-            name: filename,
-            size: pdf.length,
-            contentType: 'application/pdf',
+            name,
+            size: bytes.length,
+            contentType,
           },
         }),
       },
     );
-    if (session.ok) {
-      const { uploadUrl } = (await session.json()) as { uploadUrl: string };
-      const target = new URL(uploadUrl);
-      if (
-        target.protocol !== 'https:' ||
-        !/(^|\.)outlook\.(com|office365\.com|office\.com)$/.test(target.hostname)
-      ) {
-        throw new Error('Microsoft returned an unexpected attachment upload destination.');
-      }
-      for (let start = 0; start < pdf.length; start += 3276800) {
-        const end = Math.min(pdf.length, start + 3276800);
-        const part = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': String(end - start),
-            'Content-Range': `bytes ${start}-${end - 1}/${pdf.length}`,
-          },
-          body: pdf.slice(start, end),
-        });
-        if (!part.ok) {
-          throw new Error('The attachment upload did not complete. No application email was sent.');
-        }
-        attached = end === pdf.length && part.status === 201;
-      }
+    if (!session.ok) return false;
+    const { uploadUrl } = (await session.json()) as { uploadUrl: string };
+    const target = new URL(uploadUrl);
+    if (
+      target.protocol !== 'https:' ||
+      !/(^|\.)outlook\.(com|office365\.com|office\.com)$/.test(target.hostname)
+    ) {
+      throw new Error('Microsoft returned an unexpected attachment upload destination.');
     }
+    let done = false;
+    for (let start = 0; start < bytes.length; start += 3276800) {
+      const end = Math.min(bytes.length, start + 3276800);
+      const part = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': String(end - start),
+          'Content-Range': `bytes ${start}-${end - 1}/${bytes.length}`,
+        },
+        body: bytes.slice(start, end),
+      });
+      if (!part.ok) {
+        throw new Error('The attachment upload did not complete. No application email was sent.');
+      }
+      done = end === bytes.length && part.status === 201;
+    }
+    return done;
   }
+
+  const attached = await uploadGraphAttachment(pdf, filename, 'application/pdf');
   if (!attached) {
     throw new Error('The PDF attachment could not be added. No application email was sent.');
   }
+
+  if (info.photo) {
+    const safeApplicant = info.name.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'Applicant';
+    const photoName = `${info.year}-Applicant-Photo-${safeApplicant}-${info.id.slice(0, 8)}.${info.photo.ext}`;
+    const photoAttached = await uploadGraphAttachment(info.photo.bytes, photoName, info.photo.contentType);
+    if (!photoAttached) {
+      throw new Error('The applicant photo could not be attached. No application email was sent.');
+    }
+  }
+
   const sent = await fetch(
     `https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(id)}/send`,
     { method: 'POST', headers },
@@ -438,6 +558,9 @@ export async function sendApplication(
   // A confirmation failure must not turn the accepted Foundation submission into a retry.
   let confirmationAccepted = false;
   try {
+    const photoConfirmLine = info.photo
+      ? 'Your uploaded applicant photo was included with your application.'
+      : 'If you still need to provide a digital photo, please contact the Foundation.';
     const confirmation = {
       message: {
         from: { emailAddress: { address: setup.fromEmail } },
@@ -449,7 +572,7 @@ export async function sendApplication(
             info.testApplication
               ? 'TEST MESSAGE: This is a fictional demonstration of the student confirmation.\n\n'
               : ''
-          }Your ${info.year} scholarship application has been successfully submitted.\n\nApplication reference: ${info.id}\n\nAs a reminder, please email a digital photo of the applicant to ${info.photoEmail}, if you have not already done so.\n\nThe committee will review applications after the application deadline: ${info.deadline}. Applicants selected for an interview will be contacted.\n\nPlease keep this confirmation and your completed application PDF for your records. This confirmation does not indicate a scholarship decision or guarantee an interview or award.\n\nQuestions? Contact ${setup.fromEmail}.\n\nFox Chapel Golf Club Scholarship Foundation, Inc.`,
+          }Your ${info.year} scholarship application has been successfully submitted.\n\nApplication reference: ${info.id}\n\n${photoConfirmLine}\n\nThe committee will review applications after the application deadline: ${info.deadline}. Applicants selected for an interview will be contacted.\n\nPlease keep this confirmation and your completed application PDF for your records. This confirmation does not indicate a scholarship decision or guarantee an interview or award.\n\nQuestions? Contact ${setup.fromEmail}.\n\nFox Chapel Golf Club Scholarship Foundation, Inc.`,
         },
       },
       saveToSentItems: true,
