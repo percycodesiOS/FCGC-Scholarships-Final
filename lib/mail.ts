@@ -9,11 +9,32 @@ import {
 const encoder = new TextEncoder();
 export const mailScopes =
   'offline_access https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.ReadWrite https://graph.microsoft.com/Mail.Send.Shared';
-export const adminSignInScopes = 'openid profile email https://graph.microsoft.com/User.Read';
+export const adminSignInScopes = 'https://graph.microsoft.com/User.Read';
 export const connectionKey = 'scholarship/private/microsoft-connection';
 export const setupKey = 'scholarship/private/microsoft-setup';
 
 type Setup = { clientId: string; clientSecret: string; tenant: string; fromEmail: string };
+
+/**
+ * Load Microsoft Entra configuration from encrypted R2 storage first,
+ * falling back to Cloudflare Worker Secrets (MS_CLIENT_ID, MS_CLIENT_SECRET,
+ * MS_TENANT_ID, MS_FROM_EMAIL) so standalone Cloudflare deployments support
+ * Club Microsoft 365 sign-in immediately on Day 1 without ChatGPT Sites.
+ */
+async function readSetup(): Promise<Setup | null> {
+  const stored = await readPrivate<Setup>(setupKey);
+  if (stored?.clientId && stored?.clientSecret && stored?.tenant) return stored;
+  const e = env as unknown as Record<string, string | undefined>;
+  if (e.MS_CLIENT_ID && e.MS_CLIENT_SECRET && e.MS_TENANT_ID) {
+    return {
+      clientId: e.MS_CLIENT_ID.trim().toLowerCase(),
+      clientSecret: e.MS_CLIENT_SECRET.trim(),
+      tenant: e.MS_TENANT_ID.trim().toLowerCase(),
+      fromEmail: (e.MS_FROM_EMAIL || 'scholarshipfoundation@foxchapelgolfclub.com').trim().toLowerCase(),
+    };
+  }
+  return null;
+}
 type Connection = {
   accessToken: string;
   refreshToken: string;
@@ -84,7 +105,7 @@ export async function readPrivate<T>(
 }
 
 export async function mailStatus() {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   const connection = await readPrivate<Connection>(connectionKey);
   return {
     configured: !!setup,
@@ -113,7 +134,7 @@ export async function saveMailSetup(value: {
   if (!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(fromEmail) || fromEmail.length > 240) {
     throw new Error('Enter the sending mailbox address.');
   }
-  const old = await readPrivate<Setup>(setupKey);
+  const old = await readSetup();
   const secret =
     typeof value.clientSecret === 'string' && value.clientSecret
       ? value.clientSecret
@@ -141,7 +162,7 @@ export async function saveMailSetup(value: {
 }
 
 export async function startMicrosoft(origin: string, userId: string) {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   if (!setup) throw new Error('Complete the one-time Microsoft application setup first.');
   const state = crypto.randomUUID();
   const verifier = randomToken();
@@ -180,7 +201,7 @@ export async function startMicrosoft(origin: string, userId: string) {
  * with only User.Read (already consented), so no extra IT approval is required.
  */
 export async function startMicrosoftAdminLogin(origin: string) {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   if (!setup) {
     throw new Error('Club Microsoft 365 sign-in is not configured yet.');
   }
@@ -274,7 +295,7 @@ export async function completeMicrosoftAdminLogin(
 }
 
 async function exchange(parameters: URLSearchParams) {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   if (!setup) throw new Error('Microsoft email is not configured.');
   parameters.set('client_id', setup.clientId);
   parameters.set('client_secret', setup.clientSecret);
@@ -394,7 +415,7 @@ async function accessToken() {
  * Verifies token refresh and Microsoft Graph identity without sending any email.
  */
 export async function verifyMailConnectionHealth() {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   if (!setup) {
     return { healthy: false, message: 'One-time Microsoft setup has not been saved yet.' };
   }
@@ -437,7 +458,7 @@ export async function sendApplication(
   },
   onDraft: (id: string) => Promise<void>,
 ) {
-  const setup = await readPrivate<Setup>(setupKey);
+  const setup = await readSetup();
   if (!setup?.fromEmail) throw new Error('Choose the sending mailbox in email setup.');
   // Drafts and attachment uploads stay in the authorized user mailbox. The explicit From address uses existing Send As permission.
   const token = await accessToken();

@@ -1,5 +1,5 @@
 import type { Content } from '../lib/content';
-import { isDeadlinePassed } from '../lib/security';
+import { isDeadlinePassed } from '../lib/deadline';
 
 export default function Scholarship({
   data: d,

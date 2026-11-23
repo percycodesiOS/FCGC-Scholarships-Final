@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { getChatGPTUser, chatGPTSignInPath } from '../chatgpt-auth';
 import { editorUser } from '../../lib/auth';
 import { mailStatus } from '../../lib/mail';
@@ -13,7 +14,10 @@ export default async function Page({
 }) {
   const user = await editorUser();
   if (!user) {
-    const signedChatGpt = await getChatGPTUser();
+    const reqHeaders = await headers();
+    const host = (reqHeaders.get('host') || '').toLowerCase();
+    const isChatGptHost = host.endsWith('.chatgpt.site') || host.startsWith('localhost') || host.startsWith('127.0.0.1');
+    const signedChatGpt = isChatGptHost ? await getChatGPTUser() : null;
     let microsoftReady = false;
     try {
       microsoftReady = (await mailStatus()).configured;
@@ -50,17 +54,19 @@ export default async function Page({
               Sign in with Club Microsoft 365 ↗
             </a>
           )}
-          <a
-            className={microsoftReady ? 'button secondary' : 'button'}
-            href={
-              signedChatGpt
-                ? '/signout-with-chatgpt?return_to=/manage'
-                : chatGPTSignInPath('/manage')
-            }
-            target="_top"
-          >
-            {signedChatGpt ? 'Switch ChatGPT account' : 'Sign in with ChatGPT'} ↗
-          </a>
+          {(isChatGptHost || !microsoftReady) && (
+            <a
+              className={microsoftReady ? 'button secondary' : 'button'}
+              href={
+                signedChatGpt
+                  ? '/signout-with-chatgpt?return_to=/manage'
+                  : chatGPTSignInPath('/manage')
+              }
+              target="_top"
+            >
+              {signedChatGpt ? 'Switch ChatGPT account' : 'Sign in with ChatGPT'} ↗
+            </a>
+          )}
         </div>
       </main>
     );

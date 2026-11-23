@@ -12,10 +12,14 @@ test.after(() => rmSync(TMP, { recursive: true, force: true }));
 let secModPromise;
 function loadSecurityModule() {
   if (!secModPromise) {
-    const src = readFileSync(path.join(ROOT, 'lib/security.ts'), 'utf8').replace(
-      "import { env } from 'cloudflare:workers';",
-      'const env = { MAIL_ENCRYPTION_KEY: Buffer.from(new Uint8Array(32).fill(7)).toString("base64") };',
-    );
+    const deadlineSrc = readFileSync(path.join(ROOT, 'lib/deadline.ts'), 'utf8');
+    writeFileSync(path.join(TMP, 'deadline.mts'), deadlineSrc, 'utf8');
+    const src = readFileSync(path.join(ROOT, 'lib/security.ts'), 'utf8')
+      .replace(
+        "import { env } from 'cloudflare:workers';",
+        'const env = { MAIL_ENCRYPTION_KEY: Buffer.from(new Uint8Array(32).fill(7)).toString("base64") };',
+      )
+      .replace("from './deadline';", "from './deadline.mts';");
     const out = path.join(TMP, 'security.mts');
     writeFileSync(out, src, 'utf8');
     secModPromise = import(pathToFileURL(out).href);
