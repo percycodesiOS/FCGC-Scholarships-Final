@@ -1,0 +1,90 @@
+[hidden] { display: none !important; }
+.v2-review-bar {
+  position: relative;
+  z-index: 40;
+  background: #0d2621;
+  color: #e9efe9;
+  border-bottom: 1px solid rgba(217, 188, 130, 0.35);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.v2-review-bar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 9px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.v2-review-brand {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.v2-pill-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(217, 188, 130, 0.18);
+  border: 1px solid rgba(217, 188, 130, 0.55);
+  color: #ebd39f;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.v2-review-note {
+  color: #c7d5ce;
+  font-size: 12.5px;
+}
+.v2-review-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.v2-review-nav a,
+.v2-review-nav button {
+  appearance: none;
+  font: 600 12.5px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none;
+  color: #e9efe9;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  padding: 6px 11px;
+  cursor: pointer;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.v2-review-nav a:hover,
+.v2-review-nav button:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.v2-review-nav a.is-highlight {
+  background: #a48954;
+  border-color: #c2a770;
+  color: #0d2621;
+}
+.v2-review-nav a.is-highlight:hover {
+  background: #b89b63;
+}
+.v2-review-nav a[aria-current="page"] {
+  background: #f7f4ed;
+  border-color: #f7f4ed;
+  color: #102f29;
+}
+.v2-review-nav button.v2-reset-btn {
+  background: transparent;
+  border-color: rgba(235, 211, 159, 0.45);
+  color: #ebd39f;
+}
+@media print {
+  .v2-review-bar { display: none !important; }
+}

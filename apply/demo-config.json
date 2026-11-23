@@ -1,0 +1,16 @@
+{
+  "year": "2027",
+  "deadline": "Friday, June 18, 2027 · 4:30 p.m. EDT",
+  "deadlineIso": "2027-06-18T16:30",
+  "autoCloseAtDeadline": true,
+  "closedNotice": "The 2027 scholarship application deadline has passed. Thank you to everyone who applied.",
+  "customCoverLetter": false,
+  "submissionOpen": true,
+  "submissionRecipients": [
+    "scholarshipfoundation@foxchapelgolfclub.com"
+  ],
+  "revision": "e1023be5-5892-4125-a8ba-3bb71d3d120b",
+  "coverLetterVersion": "2027:51a129f1380bd820",
+  "canSubmit": false,
+  "closedReason": "preview-mode"
+}

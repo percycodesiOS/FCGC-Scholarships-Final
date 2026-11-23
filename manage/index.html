@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Fox Chapel Scholarship — V2 Owner Control Center (Interactive Preview for Janet)</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../v2-bar.css">
+  <style>
+    :root {
+      --green: #153d34;
+      --deep: #102f29;
+      --cream: #f7f4ed;
+      --paper: #fffdf9;
+      --gold: #a48954;
+      --ink: #203b33;
+      --muted: #5b6962;
+      --line: #deded2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #efede5;
+      color: var(--ink);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .admin-ribbon {
+      background: #122b25;
+      color: #eef3ee;
+      border-top: 4px solid #a48954;
+      border-bottom: 1px solid rgba(164, 137, 84, 0.45);
+      padding: 9px 24px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .admin-pill {
+      display: inline-block;
+      background: rgba(164, 137, 84, 0.22);
+      border: 1px solid rgba(217, 188, 130, 0.55);
+      color: #f0d8a3;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-right: 8px;
+    }
+    .demo-banner {
+      background: #102f29;
+      color: #e8efe9;
+      padding: 10px 24px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .demo-banner strong { color: #e2c98e; }
+    .shell { max-width: 1220px; margin: 0 auto; padding: 24px 24px 80px; }
+    h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; margin-top: 0; line-height: 1.15; }
+    h1 { font-size: clamp(34px, 4.5vw, 48px); margin-bottom: 8px; }
+    h2 { font-size: 28px; margin-bottom: 12px; }
+    h3 { font-size: 21px; margin-bottom: 8px; }
+    .eyebrow { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin: 0 0 8px; }
+    .header-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
+    .sticky-bar {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--cream);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .status-tag { font-size: 13px; font-weight: 600; color: var(--green); }
+    .status-tag.unsaved { color: #9b4b24; }
+    button, .btn {
+      font: inherit; font-weight: 600; font-size: 13px;
+      background: var(--green); color: #fff;
+      border: 1px solid var(--green); border-radius: 4px;
+      padding: 10px 16px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none; min-height: 42px;
+    }
+    button:hover:not(:disabled) { filter: brightness(1.12); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button.secondary, .btn.secondary { background: transparent; color: var(--green); border-color: #aebcb0; }
+    button.danger { color: #8c221b; border-color: #d8b3af; background: transparent; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #bb8b37; outline-offset: 3px; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .tablist {
+      display: flex; overflow-x: auto; gap: 4px;
+      border-bottom: 1px solid var(--line); margin-bottom: 24px;
+      scroll-snap-type: inline proximity;
+    }
+    .tablist [role="tab"] {
+      flex: none; position: relative;
+      background: transparent; color: var(--muted); border: 0; border-radius: 4px 4px 0 0;
+      padding: 12px 18px; font-size: 14px; scroll-snap-align: start;
+    }
+    .tablist [role="tab"]:hover { background: #ebe8de; color: var(--green); filter: none; }
+    .tablist [role="tab"][aria-selected="true"] { color: var(--green); }
+    .tablist [role="tab"][aria-selected="true"]::after {
+      content: ""; position: absolute; inset: auto 0 0; border-block-end: 3px solid var(--green);
+    }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 24px; margin-bottom: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .status-card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+    .pill { display: inline-flex; align-self: flex-start; padding: 4px 11px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .pill.ok { background: #e1f0e6; color: #144d31; }
+    .pill.warn { background: #f9ead5; color: #824810; }
+    .big-toggle {
+      display: flex; align-items: center; gap: 10px;
+      background: #f4f7f2; border: 1px solid #cad7cc; border-radius: 5px;
+      padding: 11px 13px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: auto;
+    }
+    .big-toggle input { width: 20px; height: 20px; accent-color: var(--green); }
+    .tile {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+      text-align: left; padding: 20px; background: #fcfbf7;
+      border: 1px solid #cfd7cc; border-radius: 6px; color: var(--ink);
+    }
+    .tile:hover { background: #eff5ef; border-color: var(--green); filter: none; }
+    .tile strong { font-size: 16px; color: var(--green); }
+    .tile span { font-size: 13px; font-weight: 400; color: var(--muted); }
+    label.field { display: block; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    label.field input, label.field textarea {
+      display: block; width: 100%; margin-top: 6px; padding: 10px 12px;
+      border: 1px solid #b5c0b5; border-radius: 4px; font: inherit; font-weight: 400; background: #fffefa;
+    }
+    .item-card {
+      display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start;
+      background: #faf9f4; border: 1px solid #d5dcd2; border-radius: 5px; padding: 12px; margin-bottom: 10px;
+    }
+    .item-num { font-family: Georgia, serif; font-size: 16px; color: var(--gold); padding-top: 8px; text-align: center; }
+    .item-card textarea { width: 100%; border: 1px solid #b9c5ba; border-radius: 4px; padding: 8px 10px; font: inherit; font-size: 14px; resize: vertical; }
+    .callout { padding: 13px 16px; border-radius: 5px; font-size: 14px; margin: 14px 0; }
+    .callout.ok { background: #e7f2ea; border-left: 4px solid var(--green); color: #143c2a; }
+    .callout.warn { background: #faf0db; border-left: 4px solid #b5832b; color: #5c3d0c; }
+    .chips { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #e6efe7; border: 1px solid #bdd0c0; border-radius: 99px; font-size: 13px; font-weight: 600; }
+    .chip button { padding: 0 5px; min-height: 24px; background: transparent; border: 0; color: var(--ink); font-size: 16px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+    .stat { background: #f5f7f2; border: 1px solid var(--line); border-radius: 5px; padding: 14px; }
+    .stat strong { display: block; font-family: Georgia, serif; font-size: 26px; color: var(--green); }
+    .stat span { font-size: 12px; color: var(--muted); }
+    .fact-card { background: #faf9f4; border: 1px solid #d7ddd4; border-left: 3px solid var(--gold); border-radius: 4px; padding: 16px; }
+    .fact-card p { font-size: 13px; margin: 0; }
+    .history-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; background: #faf9f4; border: 1px solid var(--line); border-radius: 5px; padding: 14px; margin-bottom: 10px; }
+    .preview-box { border: 2px solid var(--green); border-radius: 6px; overflow: hidden; background: var(--cream); }
+    .preview-top { background: #e8e3d7; padding: 8px 16px; text-align: center; font-size: 12px; font-weight: 600; }
+    .preview-hero { background: var(--green); color: var(--cream); padding: 36px 28px; }
+    .preview-hero h2 { font-size: 38px; color: var(--cream); margin-bottom: 10px; }
+    .preview-bar { background: #e6eadf; padding: 16px 28px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .preview-body { padding: 24px 28px; }
+    .fine { font-size: 12px; color: var(--muted); }
+    dialog { width: min(560px, calc(100vw - 24px)); border: 1px solid var(--line); border-radius: 8px; padding: 0; background: var(--paper); color: var(--ink); box-shadow: 0 20px 60px #0004; }
+    dialog:modal { overscroll-behavior: contain; }
+    dialog::backdrop { background: #102a2399; overflow: hidden; overscroll-behavior: contain; }
+    .dialog-body { padding: 26px; }
+    @media (max-width: 860px) { .grid-3, .grid-2, .stat-row { grid-template-columns: 1fr; } .item-card { grid-template-columns: 1fr; } }
+    @media print { .demo-banner, .sticky-bar, .tablist, .no-print { display: none !important; } .card { border: 0; padding: 8px 0; } }
+  </style>
+</head>
+<body>
+  <div class="v2-review-bar no-print" role="region" aria-label="V2 preview navigation">
+  <div class="v2-review-bar-inner">
+    <div class="v2-review-brand">
+      <span class="v2-pill-badge">V2 Review Preview</span>
+      <span class="v2-review-note">Separate copy for Janet &amp; the Committee · Original live site untouched</span>
+    </div>
+    <nav class="v2-review-nav" aria-label="Switch V2 preview views">
+      <a href="../">Public Homepage</a>
+      <a href="../apply/">2027 Application</a>
+      <a href="../manage/" aria-current="page">Mom’s Control Center (V2)</a>
+      <a href="../changes/">What Changed in V2</a>
+      <button type="button" id="v2ResetDemoBtn" class="v2-reset-btn" hidden>Reset Demo Edits</button>
+    </nav>
+  </div>
+</div>
+
+  <div class="shell">
+    <div class="admin-ribbon no-print" style="margin:-24px -24px 22px;border-radius:0 0 6px 6px">
+      <span><span class="admin-pill">Admin Mode</span> Private Foundation Control Center — Not visible to scholarship applicants</span>
+      <span style="color:#d7e3dc">Club Microsoft 365 Sign-In Ready (Zero ChatGPT Dependency)</span>
+    </div>
+    <div class="header-row">
+      <div>
+        <p class="eyebrow">FOX CHAPEL GOLF CLUB · SCHOLARSHIP FOUNDATION CONTROL CENTER</p>
+        <h1>Manage scholarship</h1>
+        <p style="margin:0;color:var(--muted)">Zero coding, zero AI required · Signed in with Club Microsoft 365 (zero ChatGPT account needed). Every edit shows a live preview and keeps an automatic Undo copy.</p>
+      </div>
+      <div class="btn-row no-print">
+        <button type="button" class="secondary" id="togglePreviewBtn">Preview website</button>
+        <button type="button" id="publishBtn" disabled>Publish changes</button>
+      </div>
+    </div>
+
+    <div class="sticky-bar no-print">
+      <span id="dirtyBadge" class="status-tag">✓ All saved · 2027 reviewed baseline</span>
+      <div class="btn-row">
+        <span id="countdownLabel" class="fine" style="font-weight:600;color:var(--green)"></span>
+        <button type="button" class="secondary" id="discardBtn" hidden>Discard draft</button>
+      </div>
+    </div>
+
+    <div id="bannerMsg" class="callout ok" role="status" hidden></div>
+
+    <div class="tablist no-print" role="tablist" aria-label="Control center sections" id="tablist">
+      <button type="button" role="tab" id="tab-overview" aria-selected="true" data-tab="overview">At a glance</button>
+      <button type="button" role="tab" id="tab-edit" aria-selected="false" tabindex="-1" data-tab="edit">Edit website</button>
+      <button type="button" role="tab" id="tab-wizard" aria-selected="false" tabindex="-1" data-tab="wizard">New year wizard</button>
+      <button type="button" role="tab" id="tab-email" aria-selected="false" tabindex="-1" data-tab="email">Email &amp; submissions</button>
+      <button type="button" role="tab" id="tab-safety" aria-selected="false" tabindex="-1" data-tab="safety">Safety net &amp; committee</button>
+    </div>
+
+    <div id="previewContainer" hidden></div>
+    <main id="panelHost"></main>
+  </div>
+
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="dialog-body">
+      <p class="eyebrow">FINAL CHECK BEFORE PUBLISHING</p>
+      <h2 id="confirmTitle">Publish these changes?</h2>
+      <p>Here is exactly what will change (a safety snapshot of the old version is saved automatically for 1-click Undo):</p>
+      <ul id="diffList"></ul>
+      <form method="dialog" class="btn-row" style="justify-content:flex-end;margin-top:20px">
+        <button type="submit" value="cancel" class="secondary" autofocus>Cancel &amp; keep editing</button>
+        <button type="submit" value="publish">Yes, publish now (demo)</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    'use strict';
+
+    const initialData = {
+      year: '2027',
+      deadline: 'Friday, June 18, 2027 · 4:30 p.m. EDT',
+      deadlineIso: '2027-06-18T16:30',
+      autoCloseAtDeadline: true,
+      submissionOpen: true,
+      notice: 'Scholarship applications are open.',
+      closedNotice: 'The 2027 scholarship application deadline has passed. Thank you to everyone who applied.',
+      headline: 'Promoting personal growth through higher education.',
+      intro: 'Supporting the next chapter in education for Fox Chapel Golf Club employees, children of employees, and caddies.',
+      email: 'scholarshipfoundation@foxchapelgolfclub.com',
+      phone: '(412) 967-9081',
+      address: 'Fox Chapel Golf Club Scholarship Foundation, Inc.\n426 Fox Chapel Road\nPittsburgh, PA 15238',
+      submissionRecipients: ['scholarshipfoundation@foxchapelgolfclub.com'],
+      customCoverLetterName: '',
+      eligibility: [
+        'Club employees must have commenced employment before January 1, 2027 and have completed a minimum of 160 hours of work since their start date.',
+        'Caddies must have completed a minimum of 15 rounds (preferably 20) during 2026 and trending toward completing at least 15 rounds (preferably 20) in 2027.',
+        'Applicants must be enrolled at a qualified school for the Fall 2027 semester.'
+      ],
+      requirements: [
+        'The completed 2027 scholarship application.',
+        'A recommendation letter from someone outside Fox Chapel Golf Club. Letters from FCGC personnel do not qualify.',
+        'A personal essay of 1–2 pages about your educational and career goals, how this scholarship would help, and significant experiences that have shaped your aspirations.',
+        'The first two pages of your FAFSA summary, if submitted.',
+        'Your school’s financial aid estimate for one full academic year.',
+        'A digital photo of the applicant (uploaded directly with the online application).'
+      ]
+    };
+
+    const STORAGE_KEY = 'fcgc-v2-demo-state';
+    const HISTORY_KEY = 'fcgc-v2-demo-history';
+    let saved = structuredClone(initialData);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) saved = { ...initialData, ...JSON.parse(stored) };
+    } catch {}
+    let draft = structuredClone(saved);
+    let activeTab = 'overview';
+    let showPreview = false;
+    let wizardYear = '2028';
+    let wizardDate = '2028-06-16';
+    let wizardTime = '16:30';
+    let history = (() => {
+      try {
+        const storedH = localStorage.getItem(HISTORY_KEY);
+        if (storedH) {
+          const parsed = JSON.parse(storedH);
+          if (Array.isArray(parsed) && parsed.length) return parsed;
+        }
+      } catch {}
+      return [
+      {
+        savedAt: 'Nov 4, 2026 · 9:43 p.m. ET',
+        savedBy: 'Kenny / Janet (v17 Baseline)',
+        summary: ['Added Review Application button before final confirmation', 'Verified Microsoft 365 Foundation delivery'],
+        snapshot: structuredClone(initialData)
+      }
+    ];
+    })();
+    const demoReceipts = {
+      'c560c299-bb64-4753-8607-0d8b9bb25594': {
+        status: 'ACCEPTED',
+        created: 'Nov 4, 2026 · 8:24 p.m. ET',
+        confirmationAccepted: true,
+        hashPrefix: '04e9fee6c7ab'
+      }
+    };
+
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v === false || v == null) continue;
+        if (k === 'className') node.className = v;
+        else if (k === 'onClick') node.addEventListener('click', v);
+        else if (k === 'onInput') node.addEventListener('input', v);
+        else if (k === 'onChange') node.addEventListener('change', v);
+        else if (k === 'checked') node.checked = Boolean(v);
+        else if (k === 'value') node.value = v;
+        else node.setAttribute(k, v === true ? '' : String(v));
+      }
+      for (const child of children.flat(Infinity)) {
+        if (child != null && child !== false) {
+          node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+        }
+      }
+      return node;
+    }
+
+    function formatEastern(wallIso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(wallIso || '');
+      if (!m) return '';
+      const [, y, mo, d, hh, mm] = m.map(Number);
+      const dt = new Date(Date.UTC(y, mo - 1, d, hh + 4, mm));
+      const day = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(dt);
+      const h12 = hh % 12 || 12;
+      const per = hh >= 12 ? 'p.m.' : 'a.m.';
+      const tz = mo >= 4 && mo <= 10 ? 'EDT' : 'EST';
+      return `${day} · ${h12}:${String(mm).padStart(2, '0')} ${per} ${tz}`;
+    }
+
+    function getChanges() {
+      const list = [];
+      if (saved.year !== draft.year) list.push(`Application year: ${saved.year} → ${draft.year}`);
+      if (saved.deadline !== draft.deadline) list.push(`Deadline: "${draft.deadline}"`);
+      if (saved.autoCloseAtDeadline !== draft.autoCloseAtDeadline || saved.deadlineIso !== draft.deadlineIso) {
+        list.push(draft.autoCloseAtDeadline ? `Auto-close set to ${draft.deadlineIso.replace('T', ' ')} ET` : 'Auto-close turned OFF');
+      }
+      if (saved.submissionOpen !== draft.submissionOpen) list.push(draft.submissionOpen ? 'Online submissions OPENED' : 'Online submissions PAUSED');
+      if (saved.notice !== draft.notice) list.push('Updated open announcement banner');
+      if (saved.closedNotice !== draft.closedNotice) list.push('Updated closed banner wording');
+      if (saved.email !== draft.email) list.push(`Contact email: ${draft.email}`);
+      if (saved.phone !== draft.phone) list.push(`Front office phone: ${draft.phone}`);
+      if ((saved.customCoverLetterName || '') !== (draft.customCoverLetterName || '')) {
+        list.push(draft.customCoverLetterName ? `Cover letter PDF replaced with ${draft.customCoverLetterName}` : 'Restored built-in 2-page cover letter PDF');
+      }
+      if (saved.address !== draft.address) list.push('Updated Foundation mailing address (synced to footer)');
+      if (JSON.stringify(saved.eligibility) !== JSON.stringify(draft.eligibility)) list.push(`Eligibility updated (${draft.eligibility.length} items)`);
+      if (JSON.stringify(saved.requirements) !== JSON.stringify(draft.requirements)) list.push(`Checklist updated (${draft.requirements.length} items)`);
+      if (JSON.stringify(saved.submissionRecipients) !== JSON.stringify(draft.submissionRecipients)) list.push(`Recipients: ${draft.submissionRecipients.join(', ')}`);
+      return list;
+    }
+
+    function showBanner(text, kind = 'ok') {
+      const box = document.getElementById('bannerMsg');
+      box.className = 'callout ' + kind;
+      box.textContent = text;
+      box.hidden = false;
+    }
+
+    function updateCountdown() {
+      const target = new Date('2027-06-18T20:30:00Z');
+      const days = Math.max(0, Math.ceil((target.getTime() - Date.now()) / 86400000));
+      document.getElementById('countdownLabel').textContent = `2027 Auto-Close Clock: ${days} days remaining`;
+    }
+
+    function syncTopBar() {
+      const changes = getChanges();
+      const badge = document.getElementById('dirtyBadge');
+      const pub = document.getElementById('publishBtn');
+      const disc = document.getElementById('discardBtn');
+      if (changes.length) {
+        badge.textContent = `● ${changes.length} unsaved ${changes.length === 1 ? 'change' : 'changes'}`;
+        badge.className = 'status-tag unsaved';
+        pub.disabled = false;
+        disc.hidden = false;
+      } else {
+        badge.textContent = '✓ All saved · Ready for visitors';
+        badge.className = 'status-tag';
+        pub.disabled = true;
+        disc.hidden = true;
+      }
+      document.getElementById('togglePreviewBtn').textContent = showPreview ? 'Back to console' : 'Preview website';
+    }
+
+    function renderPreview() {
+      const host = document.getElementById('previewContainer');
+      const addrLines = draft.address.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      const footerAddr = addrLines.length > 1 ? addrLines.slice(1).join(' · ') : (addrLines[0] || '');
+      host.replaceChildren(
+        el('div', { className: 'preview-box' },
+          el('div', { className: 'preview-top' }, draft.submissionOpen ? draft.notice : draft.closedNotice),
+          el('div', { className: 'preview-hero' },
+            el('p', { className: 'eyebrow', style: 'color:#dccaa6' }, `THE ${draft.year} SCHOLARSHIP PROGRAM`),
+            el('h2', {}, 'A strong foundation. A brighter next chapter.'),
+            el('p', { style: 'max-width:560px;color:#d7e0d9' }, draft.intro)
+          ),
+          el('div', { className: 'preview-bar' },
+            el('div', {}, el('p', { className: 'eyebrow' }, draft.submissionOpen ? 'SUBMISSION DEADLINE' : 'APPLICATIONS CLOSED'), el('strong', {}, draft.deadline)),
+            el('div', { className: 'fine' }, draft.autoCloseAtDeadline ? `Auto-closes automatically at ${draft.deadlineIso.replace('T', ' ')} ET` : 'Manual close mode')
+          ),
+          el('div', { className: 'preview-body grid-2' },
+            el('div', {},
+              el('h3', {}, 'Eligibility requirements'),
+              el('ol', {}, draft.eligibility.map(item => el('li', {}, item)))
+            ),
+            el('div', {},
+              el('h3', {}, 'Required documents'),
+              el('ul', {}, draft.requirements.map(item => el('li', {}, item))),
+              el('p', { className: 'fine' }, `Photos uploaded inline (1 clean email to Foundation) · Footer address synced: ${footerAddr}`)
+            )
+          )
+        )
+      );
+    }
+
+    function renderOverview() {
+      return el('div', {},
+        el('div', { className: 'grid-3' },
+          el('article', { className: 'status-card' },
+            el('span', { className: draft.submissionOpen ? 'pill ok' : 'pill warn' }, draft.submissionOpen ? '● Open for applications' : '● Paused / Closed'),
+            el('h3', {}, `${draft.year} Scholarship Cycle`),
+            el('p', { style: 'margin:0' }, el('strong', {}, 'Deadline: '), draft.deadline),
+            el('p', { className: 'fine', style: 'margin:0' }, draft.autoCloseAtDeadline ? `Auto-close ON (${draft.deadlineIso.replace('T', ' ')} ET)` : 'Auto-close OFF'),
+            el('label', { className: 'big-toggle' },
+              el('input', { type: 'checkbox', checked: draft.submissionOpen, onChange: e => { draft.submissionOpen = e.target.checked; render(); } }),
+              el('span', {}, draft.submissionOpen ? 'Accepting online applications' : 'Closed (toggle to reopen)')
+            )
+          ),
+          el('article', { className: 'status-card' },
+            el('span', { className: 'pill ok' }, '● Microsoft 365 Connected'),
+            el('h3', {}, 'Delivery Mailbox'),
+            el('p', { style: 'margin:0' }, el('strong', {}, 'Inbox: '), draft.submissionRecipients.join(', ')),
+            el('p', { className: 'fine', style: 'margin:0' }, 'Authorized as jmacek@foxchapelgolfclub.com · Zero student PDFs stored on server.'),
+            el('button', { type: 'button', className: 'secondary', style: 'margin-top:auto', onClick: () => switchTab('email') }, 'Check connection & verify receipt')
+          ),
+          el('article', { className: 'status-card' },
+            el('span', { className: 'pill ok' }, '● A+ Security Active'),
+            el('h3', {}, 'Committee-Ready Security'),
+            el('p', { style: 'margin:0;font-size:13px' }, 'CSP & anti-clickjacking headers, HKDF AES-256-GCM encryption, PDF script scanner, and 3-layer rate limits active.'),
+            el('button', { type: 'button', className: 'secondary', style: 'margin-top:auto', onClick: () => switchTab('safety') }, 'Open printable committee sheet')
+          )
+        ),
+        el('section', { className: 'card' },
+          el('h2', {}, 'What would you like to do today?'),
+          el('div', { className: 'grid-2' },
+            el('button', { type: 'button', className: 'tile', onClick: () => switchTab('wizard') },
+              el('strong', {}, 'Start a new scholarship year (4 steps)'),
+              el('span', {}, 'Automatically updates 2027 → 2028 across the deadline, eligibility rules, and checklist with a live preview.')
+            ),
+            el('button', { type: 'button', className: 'tile', onClick: () => switchTab('edit') },
+              el('strong', {}, 'Edit wording, dates, or checklist'),
+              el('span', {}, 'Visual bullet cards with Add / Move Up / Move Down — impossible to break with blank lines.')
+            ),
+            el('button', { type: 'button', className: 'tile', onClick: () => switchTab('email') },
+              el('strong', {}, 'Verify a student’s submission receipt'),
+              el('span', {}, 'Paste a student’s Reference ID to confirm Microsoft accepted it in 1 second (try Janet’s real test ID!).')
+            ),
+            el('button', { type: 'button', className: 'tile', onClick: () => switchTab('safety') },
+              el('strong', {}, 'Undo a change or print committee sheet'),
+              el('span', {}, '1-click version history restore plus a 1-page Security & Maintenance Fact Sheet for Kent & the board.')
+            )
+          )
+        )
+      );
+    }
+
+    function renderListEditor(key, heading, iconFn) {
+      const items = draft[key];
+      return el('div', { style: 'margin-top:18px' },
+        el('div', { className: 'header-row', style: 'margin-bottom:10px' },
+          el('h3', { style: 'margin:0' }, `${heading} (${items.length})`),
+          el('button', { type: 'button', className: 'secondary', onClick: () => { items.push(''); render(); } }, `+ Add ${heading.toLowerCase().includes('elig') ? 'rule' : 'item'}`)
+        ),
+        ...items.map((text, idx) =>
+          el('div', { className: 'item-card' },
+            el('span', { className: 'item-num' }, iconFn(idx)),
+            el('textarea', { rows: 2, value: text, onInput: e => { items[idx] = e.target.value; syncTopBar(); } }),
+            el('div', { className: 'btn-row' },
+              el('button', { type: 'button', className: 'secondary', disabled: idx === 0, onClick: () => { [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]]; render(); } }, '↑'),
+              el('button', { type: 'button', className: 'secondary', disabled: idx === items.length - 1, onClick: () => { [items[idx + 1], items[idx]] = [items[idx], items[idx + 1]]; render(); } }, '↓'),
+              el('button', { type: 'button', className: 'danger', disabled: items.length <= 1, onClick: () => { items.splice(idx, 1); render(); } }, 'Remove')
+            )
+          )
+        )
+      );
+    }
+
+    function renderEdit() {
+      const [dDate, dTime] = (draft.deadlineIso || '2027-06-18T16:30').split('T');
+      let recipInput;
+      return el('div', {},
+        el('section', { className: 'card' },
+          el('h2', {}, '1. Year, deadline & automatic cutoff'),
+          el('div', { className: 'grid-3' },
+            el('label', { className: 'field' }, 'Application year',
+              el('input', { value: draft.year, maxLength: 4, onInput: e => { draft.year = e.target.value; syncTopBar(); } })
+            ),
+            el('label', { className: 'field' }, 'Automatic close date',
+              el('input', { type: 'date', value: dDate, onChange: e => { draft.deadlineIso = `${e.target.value}T${dTime}`; draft.deadline = formatEastern(draft.deadlineIso) || draft.deadline; render(); } })
+            ),
+            el('label', { className: 'field' }, 'Automatic close time (ET)',
+              el('input', { type: 'time', value: dTime, onChange: e => { draft.deadlineIso = `${dDate}T${e.target.value}`; draft.deadline = formatEastern(draft.deadlineIso) || draft.deadline; render(); } })
+            )
+          ),
+          el('label', { className: 'field' }, 'Displayed deadline text (auto-updated from picker above)',
+            el('input', { value: draft.deadline, onInput: e => { draft.deadline = e.target.value; syncTopBar(); } })
+          ),
+          el('label', { className: 'big-toggle' },
+            el('input', { type: 'checkbox', checked: draft.autoCloseAtDeadline, onChange: e => { draft.autoCloseAtDeadline = e.target.checked; syncTopBar(); } }),
+            el('span', {}, 'Automatically close online submissions at this exact Eastern Time deadline')
+          )
+        ),
+        el('section', { className: 'card' },
+          el('h2', {}, '2. Eligibility & required documents (visual cards)'),
+          renderListEditor('eligibility', 'Eligibility requirements', i => String(i + 1).padStart(2, '0')),
+          renderListEditor('requirements', 'Required checklist', () => '✓')
+        ),
+        el('section', { className: 'card' },
+          el('h2', {}, '3. Contact details, cover letter PDF & recipients'),
+          el('div', { className: 'grid-2' },
+            el('label', { className: 'field' }, 'Contact email', el('input', { type: 'email', value: draft.email, onInput: e => { draft.email = e.target.value; syncTopBar(); } })),
+            el('label', { className: 'field' }, 'Front office phone', el('input', { value: draft.phone, onInput: e => { draft.phone = e.target.value; syncTopBar(); } }))
+          ),
+          el('div', { style: 'background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:16px;margin:14px 0 18px' },
+            el('strong', { style: 'display:block;margin-bottom:4px' }, 'Official 2-Page Cover Letter PDF'),
+            el('p', { className: 'fine', style: 'margin:0 0 10px' }, draft.customCoverLetterName
+              ? `Custom PDF selected (demo): ${draft.customCoverLetterName} — scanned for PDF security before saving.`
+              : 'Currently using the built-in 2-page Foundation cover letter PDF. Upload a new PDF anytime (for wording updates or next year’s rollover) with zero coding.'),
+            el('div', { className: 'btn-row' },
+              el('label', { className: 'btn secondary', style: 'cursor:pointer' },
+                'Upload new cover letter PDF',
+                el('input', { type: 'file', accept: 'application/pdf,.pdf', hidden: true, onChange: e => {
+                  const f = e.target.files?.[0];
+                  if (f) { draft.customCoverLetterName = f.name; showBanner(`Selected "${f.name}" as your new 2-page cover letter PDF (demo). Click "Publish changes" to apply.`); render(); }
+                  e.target.value = '';
+                } })
+              ),
+              draft.customCoverLetterName ? el('button', { type: 'button', className: 'danger', onClick: () => { draft.customCoverLetterName = ''; showBanner('Reverted to the built-in master cover letter PDF (demo).'); render(); } }, 'Restore original master') : null
+            )
+          ),
+          el('label', { className: 'field' }, 'Foundation mailing address (automatically synced to website footer)',
+            el('textarea', { rows: 3, value: draft.address, onInput: e => { draft.address = e.target.value; syncTopBar(); } })
+          ),
+          el('h3', {}, 'Application recipients'),
+          el('ul', { className: 'chips' }, draft.submissionRecipients.map((addr, idx) =>
+            el('li', { className: 'chip' },
+              el('span', {}, idx === 0 ? `${addr} (Primary)` : addr),
+              draft.submissionRecipients.length > 1 ? el('button', { type: 'button', onClick: () => { draft.submissionRecipients = draft.submissionRecipients.filter(x => x !== addr); render(); } }, '×') : null
+            )
+          )),
+          el('div', { className: 'btn-row' },
+            (recipInput = el('input', { type: 'email', placeholder: 'Add another committee email…', style: 'flex:1;padding:10px;border:1px solid #b5c0b5;border-radius:4px' })),
+            el('button', { type: 'button', className: 'secondary', onClick: () => {
+              const v = recipInput.value.trim().toLowerCase();
+              if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && !draft.submissionRecipients.includes(v)) {
+                draft.submissionRecipients.push(v); render();
+              }
+            } }, 'Add recipient')
+          )
+        )
+      );
+    }
+
+    function renderWizard() {
+      const oldY = Number(draft.year) || 2027;
+      const newY = Number(wizardYear) || oldY + 1;
+      const previewDeadline = formatEastern(`${wizardDate}T${wizardTime}`);
+      return el('section', { className: 'card' },
+        el('p', { className: 'eyebrow' }, 'GUIDED ANNUAL ROLLOVER · TRY IT NOW'),
+        el('h2', {}, 'Set up a new scholarship year in 1 minute'),
+        el('p', {}, 'Pick next year’s date and click Apply — watch how the wizard automatically shifts every date in your Eligibility and Checklist bullets and opens a live preview.'),
+        el('div', { className: 'grid-3' },
+          el('label', { className: 'field' }, 'New scholarship year',
+            el('input', { value: wizardYear, maxLength: 4, onInput: e => { wizardYear = e.target.value; if (/^20\d{2}$/.test(wizardYear)) wizardDate = wizardYear + wizardDate.slice(4); render(); } })
+          ),
+          el('label', { className: 'field' }, 'New deadline date',
+            el('input', { type: 'date', value: wizardDate, onChange: e => { wizardDate = e.target.value; render(); } })
+          ),
+          el('label', { className: 'field' }, 'Deadline time (Eastern)',
+            el('input', { type: 'time', value: wizardTime, onChange: e => { wizardTime = e.target.value; render(); } })
+          )
+        ),
+        el('div', { className: 'callout ok' }, el('strong', {}, 'Auto-formatted deadline: '), previewDeadline || `${wizardDate} ${wizardTime}`),
+        el('div', { className: 'callout warn' }, el('strong', {}, 'Cover letter reminder: '), 'Because the 2-page Foundation cover letter is an official reviewed PDF, update the Word master in the shared Drive folder separately when dates change.'),
+        el('div', { className: 'btn-row' },
+          el('button', { type: 'button', onClick: () => {
+            draft.year = String(newY);
+            draft.deadlineIso = `${wizardDate}T${wizardTime}`;
+            draft.deadline = previewDeadline || draft.deadline;
+            draft.notice = `${newY} scholarship applications are open.`;
+            draft.closedNotice = `The ${newY} scholarship application deadline has passed. Thank you to everyone who applied.`;
+            draft.eligibility = draft.eligibility.map(s => s.replaceAll(String(oldY), String(newY)).replaceAll(String(oldY - 1), String(newY - 1)));
+            draft.requirements = draft.requirements.map(s => s.replaceAll(String(oldY), String(newY)));
+            showPreview = true;
+            showBanner(`Loaded ${newY} rollover draft! Inspect the live preview below — nothing publishes until you click "Publish changes".`);
+            render();
+          } }, `Load ${newY} draft & open live preview`)
+        )
+      );
+    }
+
+    function renderEmail() {
+      let refInput, refOutput, healthOutput;
+      return el('div', {},
+        el('section', { className: 'card' },
+          el('div', { className: 'header-row' },
+            el('div', {}, el('p', { className: 'eyebrow' }, 'EVERYDAY MAILBOX STATUS'), el('h2', {}, 'Microsoft / Outlook email delivery')),
+            el('span', { className: 'pill ok' }, '● Connected & Ready')
+          ),
+          el('p', {}, 'Authorized as jmacek@foxchapelgolfclub.com · Sending from scholarshipfoundation@foxchapelgolfclub.com'),
+          el('div', { className: 'btn-row' },
+            el('button', { type: 'button', onClick: () => { healthOutput.textContent = '✓ Connection verified! Microsoft Graph token refreshed cleanly and Send-As mailbox scholarshipfoundation@foxchapelgolfclub.com is ready.'; healthOutput.hidden = false; } }, 'Test connection now'),
+            el('button', { type: 'button', className: 'secondary', onClick: () => { healthOutput.textContent = 'In the live app, this redirects securely to Microsoft sign-in using a __Secure- OAuth state cookie + PKCE.'; healthOutput.hidden = false; } }, 'Reconnect Microsoft mailbox')
+          ),
+          (healthOutput = el('div', { className: 'callout ok', hidden: true, role: 'status' }))
+        ),
+        el('section', { className: 'card' },
+          el('p', { className: 'eyebrow' }, 'ZERO-PII SUBMISSION LEDGER & REFERENCE VERIFIER'),
+          el('h2', {}, 'Did a student’s application go through?'),
+          el('div', { className: 'stat-row' },
+            el('div', { className: 'stat' }, el('strong', {}, '1'), el('span', {}, 'Verified test receipt')),
+            el('div', { className: 'stat' }, el('strong', {}, '0'), el('span', {}, 'Needs delivery check')),
+            el('div', { className: 'stat' }, el('strong', {}, '0 bytes'), el('span', {}, 'Student PII stored on server'))
+          ),
+          el('p', { className: 'fine' }, 'Try pasting Janet’s verified November 4 test ID: c560c299-bb64-4753-8607-0d8b9bb25594'),
+          el('div', { className: 'btn-row' },
+            (refInput = el('input', { type: 'text', value: 'c560c299-bb64-4753-8607-0d8b9bb25594', style: 'flex:1;padding:10px;border:1px solid #b5c0b5;border-radius:4px' })),
+            el('button', { type: 'button', onClick: () => {
+              const r = demoReceipts[refInput.value.trim().toLowerCase()];
+              refOutput.hidden = false;
+              if (r) {
+                refOutput.className = 'callout ok';
+                refOutput.textContent = `✓ Receipt verified: ${r.status} · Submitted ${r.created} · Student confirmation email accepted by Microsoft · PDF SHA-256 fingerprint: ${r.hashPrefix}…`;
+              } else {
+                refOutput.className = 'callout warn';
+                refOutput.textContent = 'No receipt matched that Reference ID.';
+              }
+            } }, 'Check reference')
+          ),
+          (refOutput = el('div', { className: 'callout ok', hidden: true, role: 'status' }))
+        ),
+        el('section', { className: 'card' },
+          el('details', {},
+            el('summary', { style: 'cursor:pointer;font-weight:700;color:var(--muted)' }, 'IT / Club Administrator Setup (One-Time Only — Janet never needs to open this)'),
+            el('p', { className: 'fine', style: 'margin-top:10px' }, 'Microsoft Entra Client ID, Tenant ID, and Client Secret live safely tucked here, encrypted at rest with HKDF-derived AES-256-GCM and excluded from all backups.')
+          )
+        )
+      );
+    }
+
+    function renderSafety() {
+      return el('div', {},
+        el('section', { className: 'card no-print' },
+          el('p', { className: 'eyebrow' }, '1-CLICK UNDO · AUTOMATIC VERSION SNAPSHOTS'),
+          el('h2', {}, 'Recent saved versions'),
+          ...history.map(item =>
+            el('div', { className: 'history-item' },
+              el('div', {},
+                el('strong', {}, item.savedAt), ' ', el('span', { className: 'fine' }, `by ${item.savedBy}`),
+                el('ul', { style: 'margin:6px 0 0;padding-left:18px;font-size:13px' }, item.summary.map(s => el('li', {}, s)))
+              ),
+              el('button', { type: 'button', className: 'secondary', onClick: () => {
+                draft = structuredClone(item.snapshot);
+                showPreview = true;
+                showBanner('Restored earlier snapshot into your preview draft. Click "Publish changes" to make it live.');
+                render();
+              } }, 'Preview this version')
+            )
+          )
+        ),
+        el('section', { className: 'card' },
+          el('div', { className: 'header-row' },
+            el('div', {}, el('p', { className: 'eyebrow' }, 'HANDOUT FOR KENT, THE COMMITTEE & CLUB IT'), el('h2', {}, 'Security, Privacy & Maintenance Fact Sheet')),
+            el('button', { type: 'button', className: 'secondary no-print', onClick: () => window.print() }, 'Print 1-page summary')
+          ),
+          el('div', { className: 'grid-2' },
+            el('article', { className: 'fact-card' },
+              el('h3', {}, '1. Zero Student PII Stored on Server'),
+              el('p', {}, 'Essays, FAFSA summaries, financial totals, and signatures stay exclusively on the applicant’s own device until Submit. Completed PDFs flow straight into Microsoft 365 Outlook and are never stored in cloud buckets.')
+            ),
+            el('article', { className: 'fact-card' },
+              el('h3', {}, '2. Club-Owned Microsoft 365 Controls'),
+              el('p', {}, 'Uses Fox Chapel Golf Club’s own Entra application registration and delegated Send-As permission for scholarshipfoundation@foxchapelgolfclub.com. No shared password; Club IT can revoke access in one click.')
+            ),
+            el('article', { className: 'fact-card' },
+              el('h3', {}, '3. Defense-in-Depth Hardening (V2)'),
+              el('p', {}, 'Strict CSP & anti-clickjacking headers, Fetch Metadata isolation, HKDF-separated AES-256-GCM encryption, single-use signed submission nonces, server-side PDF active-content scanning, and 3-layer daily anti-spam rate limits.')
+            ),
+            el('article', { className: 'fact-card' },
+              el('h3', {}, '4. Zero-Code Annual Upkeep & Portability'),
+              el('p', {}, 'Automatic Eastern Time deadline cutoff, guided New Year rollover wizard, 1-click Undo history, and full portable website backup exports — zero coding or AI subscription needed to maintain.')
+            )
+          )
+        )
+      );
+    }
+
+    function switchTab(id) {
+      activeTab = id;
+      showPreview = false;
+      render();
+    }
+
+    function render() {
+      syncTopBar();
+      for (const btn of document.querySelectorAll('#tablist [role="tab"]')) {
+        const selected = btn.dataset.tab === activeTab;
+        btn.setAttribute('aria-selected', String(selected));
+        btn.tabIndex = selected ? 0 : -1;
+      }
+      const prevEl = document.getElementById('previewContainer');
+      const host = document.getElementById('panelHost');
+      if (showPreview) {
+        prevEl.hidden = false;
+        host.hidden = true;
+        renderPreview();
+      } else {
+        prevEl.hidden = true;
+        host.hidden = false;
+        const view = activeTab === 'overview' ? renderOverview()
+          : activeTab === 'edit' ? renderEdit()
+          : activeTab === 'wizard' ? renderWizard()
+          : activeTab === 'email' ? renderEmail()
+          : renderSafety();
+        host.replaceChildren(view);
+      }
+    }
+
+    document.querySelectorAll('#tablist [role="tab"]').forEach((btn, idx, all) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      btn.addEventListener('keydown', e => {
+        if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+        e.preventDefault();
+        const nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? all.length - 1 : (idx + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length;
+        switchTab(all[nextIdx].dataset.tab);
+        all[nextIdx].focus();
+      });
+    });
+
+    document.getElementById('togglePreviewBtn').addEventListener('click', () => { showPreview = !showPreview; render(); });
+    document.getElementById('discardBtn').addEventListener('click', () => { draft = structuredClone(saved); showBanner('Draft discarded.'); render(); });
+
+    const confirmDialog = document.getElementById('confirmDialog');
+    document.getElementById('publishBtn').addEventListener('click', () => {
+      const diffList = document.getElementById('diffList');
+      diffList.replaceChildren(...getChanges().map(c => el('li', {}, c)));
+      confirmDialog.showModal();
+    });
+    confirmDialog.addEventListener('close', () => {
+      const choice = confirmDialog.returnValue;
+      confirmDialog.returnValue = '';
+      if (choice === 'publish') {
+        const summary = getChanges();
+        history.unshift({
+          savedAt: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) + ' ET',
+          savedBy: 'Janet (Demo Save)',
+          summary,
+          snapshot: structuredClone(saved)
+        });
+        saved = structuredClone(draft);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 12)));
+        } catch {}
+        const resetBtn = document.getElementById('v2ResetDemoBtn');
+        if (resetBtn) resetBtn.hidden = false;
+        showPreview = false;
+        showBanner('Demo save complete! Switch to "Public Homepage" or "2027 Application" in the top bar to see your updates live — or open "Safety net & committee" for 1-click Undo.');
+        render();
+      }
+    });
+
+    const resetBtn = document.getElementById('v2ResetDemoBtn');
+    if (resetBtn) {
+      try {
+        if (localStorage.getItem(STORAGE_KEY)) resetBtn.hidden = false;
+      } catch {}
+      resetBtn.addEventListener('click', () => {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(HISTORY_KEY);
+        } catch {}
+        location.reload();
+      });
+    }
+    updateCountdown();
+    render();
+  </script>
+</body>
+</html>

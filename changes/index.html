@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>What Changed in V2 — Fox Chapel Golf Club Scholarship Foundation</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../v2-bar.css">
+  <style>
+    :root {
+      --green: #153d34;
+      --deep: #102f29;
+      --cream: #f7f4ed;
+      --paper: #fffdf9;
+      --gold: #a48954;
+      --ink: #203b33;
+      --muted: #5b6962;
+      --line: #deded2;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cream); color: var(--ink); font: 15px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 36px 24px 80px; }
+    h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; color: var(--deep); line-height: 1.18; }
+    h1 { font-size: clamp(32px, 4.5vw, 46px); margin: 6px 0 12px; }
+    h2 { font-size: 26px; margin: 0 0 12px; }
+    h3 { font-size: 19px; margin: 0 0 6px; }
+    .eyebrow { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin: 0; }
+    .lead { font-size: 17px; color: var(--muted); max-width: 780px; margin: 0 0 24px; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 4px; font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid var(--green); background: var(--green); color: #fff; cursor: pointer; }
+    .btn.secondary { background: transparent; color: var(--green); border-color: #a9b9ae; }
+    .btn:hover { filter: brightness(1.08); }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 26px; margin-bottom: 22px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 14px; }
+    .tile { background: var(--cream); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px; }
+    .tile strong { color: var(--deep); }
+    .tile p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+    .pill { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 999px; background: #e8f1eb; color: var(--green); margin-bottom: 8px; }
+    .callout { background: #fdf6e9; border-left: 4px solid var(--gold); padding: 14px 18px; border-radius: 4px; margin-top: 14px; font-size: 14px; }
+    @media print { .no-print { display: none !important; } body { background: #fff; } .card { border: 1px solid #ccc; break-inside: avoid; } }
+  </style>
+</head>
+<body>
+<div class="v2-review-bar no-print" role="region" aria-label="V2 preview navigation">
+  <div class="v2-review-bar-inner">
+    <div class="v2-review-brand">
+      <span class="v2-pill-badge">V2 Review Preview</span>
+      <span class="v2-review-note">Separate copy for Janet &amp; the Committee · Original live site untouched</span>
+    </div>
+    <nav class="v2-review-nav" aria-label="Switch V2 preview views">
+      <a href="../">Public Homepage</a>
+      <a href="../apply/">2027 Application</a>
+      <a href="../manage/" class="is-highlight">Mom’s Control Center (V2)</a>
+      <a href="../changes/" aria-current="page">What Changed in V2</a>
+      <button type="button" id="v2ResetDemoBtn" class="v2-reset-btn" hidden>Reset Demo Edits</button>
+    </nav>
+  </div>
+</div>
+<div class="wrap">
+  <p class="eyebrow">FOX CHAPEL GOLF CLUB SCHOLARSHIP FOUNDATION · V2 PROPOSAL</p>
+  <h1>What We Upgraded in Version 2</h1>
+  <p class="lead">Your live site already looks great, keeps the official 2-page cover letter and Excel PDF layout intact, and stores zero student files on the server. Version 2 keeps all of that untouched while adding <strong>Club-IT security hardening</strong> and a <strong>zero-coding Owner Control Center</strong> built specifically so Mom can run it effortlessly every year.</p>
+
+  <div class="cta-row no-print">
+    <a class="btn" href="../manage/">Try Mom’s Control Center (V2) →</a>
+    <a class="btn secondary" href="../">View Public Homepage</a>
+    <a class="btn secondary" href="../apply/">Try 2027 Application</a>
+    <button type="button" class="btn secondary" onclick="window.print()">Print Summary for Committee</button>
+  </div>
+
+  <section class="card">
+    <p class="eyebrow">BUILT FOR MOM · ZERO CODING OR AI NEEDED</p>
+    <h2>11 Effortless Maintenance &amp; Student Upgrades</h2>
+    <div class="grid">
+      <div class="tile"><span class="pill">Zero ChatGPT</span><h3>1. Club Microsoft 365 Sign-In</h3><p>Sign into <code>/manage</code> with Janet’s Club work email (<code>jmacek@foxchapelgolfclub.com</code>)—reusing the existing Entra app with zero ChatGPT account needed.</p></div>
+      <div class="tile"><span class="pill">One Email</span><h3>2. Direct Applicant Photo Upload</h3><p>Removed all separate <code>wparks@foxchapelgolfclub.com</code> instructions. Students upload their photo right in the form (auto-compressed JPEG, included in the PDF and attached on the same single Foundation email).</p></div>
+      <div class="tile"><span class="pill">No-Code PDF</span><h3>3. Upload 2-Page Cover Letter PDF</h3><p>Swap in a new 2-page Word/PDF cover letter anytime directly inside <code>/manage</code>—scanned for PDF safety with 1-click restore back to the master.</p></div>
+      <div class="tile"><span class="pill">Dashboard</span><h3>4. Five-Tab Control Center</h3><p>Replaces one long form with five plain-English tabs: At a Glance, Edit Website, New Year Wizard, Email &amp; Submissions, and Safety Net &amp; Committee.</p></div>
+      <div class="tile"><span class="pill">No-Code Editor</span><h3>5. Visual Bullet Cards</h3><p>Add, reorder (↑ / ↓), or remove Eligibility and Checklist items with buttons—blank lines are cleaned automatically so nothing can break.</p></div>
+      <div class="tile"><span class="pill">Automatic Clock</span><h3>6. Eastern Time Auto-Cutoff</h3><p>Pick the deadline date and time once; it formats the page text and closes submissions automatically at 4:30 p.m. ET—no racing to a computer.</p></div>
+      <div class="tile"><span class="pill">Annual Rollover</span><h3>7. Guided New Year Wizard</h3><p>Roll over 2027 → 2028 in four quick steps, updating dates across the site and prompting to upload the new 2-page cover letter PDF.</p></div>
+      <div class="tile"><span class="pill">Safety Check</span><h3>8. “What Changed?” Confirmation</h3><p>Before anything goes live, editors see a clear bullet list of exact changes, with Cancel safely focused by default.</p></div>
+      <div class="tile"><span class="pill">Undo</span><h3>9. 1-Click Version History</h3><p>Every save stores an automatic snapshot and change log so any mistake can be previewed and undone in one click.</p></div>
+      <div class="tile"><span class="pill">Zero PII</span><h3>10. Reference ID Verifier</h3><p>Paste any student’s Reference ID to confirm Microsoft 365 delivery and timestamp—while still keeping zero student personal info on the server.</p></div>
+      <div class="tile"><span class="pill">Committee Ready</span><h3>11. Footer Sync &amp; 1-Page Fact Sheet</h3><p>Editing the Foundation mailing address updates the footer automatically, plus a printable one-page security handout for Kent and the Committee.</p></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <p class="eyebrow">BUILT FOR CLUB IT &amp; REAL-WORLD RELIABILITY</p>
+    <h2>7 Defense-in-Depth Security Upgrades (Tuned for FCGC)</h2>
+    <div class="grid">
+      <div class="tile"><span class="pill">S1 · Club Embed</span><h3>Fox Chapel Iframe-Safe Headers</h3><p>Strict CSP, HSTS, Referrer-Policy, and Permissions-Policy—allowing public pages to embed exclusively on <code>foxchapelgolfclub.org</code> while keeping <code>/manage</code> strictly <code>DENY</code>.</p></div>
+      <div class="tile"><span class="pill">S2 · Edge Guard</span><h3>Fetch Metadata API Isolation</h3><p>Blocks cross-site requests to admin APIs before handlers run, while cleanly supporting Club-embedded student submissions and Microsoft Entra OAuth callbacks.</p></div>
+      <div class="tile"><span class="pill">S3 · Crypto</span><h3>HKDF-SHA256 Key Separation</h3><p>Derives dedicated subkeys for encrypted mailbox tokens, OAuth state, admin sessions, submission tokens, and rate limits—with seamless v1 read compatibility.</p></div>
+      <div class="tile"><span class="pill">S4 · Club Wi-Fi</span><h3>Single-Use Nonces &amp; Smart Quotas</h3><p>Prevents token replay while letting caddies/staff share Club Wi-Fi cleanly: <strong>25/day per IP</strong>, <strong>3/day per email</strong>, and <strong>80/day global</strong> circuit breaker.</p></div>
+      <div class="tile"><span class="pill">S5 · FAFSA Safe</span><h3>Active-Content PDF &amp; Photo Scanner</h3><p>Blocks executable PDF JavaScript, Launch, AA, and RichMedia payloads while allowing harmless FAFSA zoom hints, plus JPEG/PNG magic-byte validation on applicant photos.</p></div>
+      <div class="tile"><span class="pill">S6 · OAuth</span><h3>Hardened Entra OAuth &amp; Diagnostics</h3><p>Uses <code>__Secure-</code> cookies, constant-time checks, and plain-English alerts if the Entra client secret (expected ~Nov 1, 2027) needs rotation.</p></div>
+      <div class="tile"><span class="pill">S7 · Least Data</span><h3>Minimized Public Config API</h3><p>Strips internal edit metadata and secondary review emails from anonymous <code>/api/content</code> responses—shown only to signed-in editors.</p></div>
+    </div>
+
+    <div class="callout">
+      <strong>Notes for Mom &amp; Club IT:</strong> (1) All <code>wparks@foxchapelgolfclub.com</code> photo-email instructions were cleanly removed and logged in <code>V2-SUGGESTIONS.md</code>—if the Committee ever wants W. Parks copied later, just add her email in <em>Edit website → Application recipients</em>. (2) Remember to update the one photo bullet inside the Word cover letter and upload it via the new Cover Letter button. (3) Disable the older October 21 mail-in draft on <code>percycodesios.github.io/fcgc-scholarships/</code> once the new URL is live.
+    </div>
+  </section>
+</div>
+</body>
+</html>
