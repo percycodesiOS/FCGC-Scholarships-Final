@@ -289,6 +289,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
     url.pathname.startsWith('/api/');
 
   headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   if (isAdminOrApi) {
     headers.set('X-Frame-Options', 'DENY');
   } else {
