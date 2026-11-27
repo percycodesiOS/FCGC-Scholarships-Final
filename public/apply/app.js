@@ -71,13 +71,44 @@ if(eligCheck)eligCheck.onchange=updateBeginEnabled;
 beginButton.onclick=()=>{if(!letterScrolledToEnd){warnMustScroll();return;}if(!coverCheck.checked||(eligCheck&&!eligCheck.checked))return;coverAcknowledged=true;document.getElementById('coverLetterGate').hidden=true;document.getElementById('applicationWorkflow').hidden=false;window.scrollTo({top:0,behavior:'auto'});const startHeading=document.getElementById('workflowStartHeading');if(startHeading){startHeading.focus({preventScroll:true});startHeading.scrollIntoView({block:'start',behavior:'auto'});}};
 const reviewCoverBtn=document.getElementById('reviewCover');if(reviewCoverBtn)reviewCoverBtn.onclick=()=>{coverAcknowledged=false;coverCheck.checked=false;if(eligCheck)eligCheck.checked=false;if(coverScrollbox){letterScrolledToEnd=false;coverCheck.disabled=true;if(eligCheck)eligCheck.disabled=true;if(ackBlock)ackBlock.classList.add('ack-locked');if(coverScrollWarning)coverScrollWarning.hidden=true;if(coverReadProgress){coverReadProgress.textContent="Please carefully read pages one and two of the Foundation's cover letter. Once you reach the end of page two, the acknowledgment box will unlock to allow you to continue with the application.";coverReadProgress.parentElement?.classList.remove('read-complete');}if(coverPrintBar)coverPrintBar.hidden=true;coverScrollbox.scrollTop=0;}updateBeginEnabled();document.getElementById('applicationWorkflow').hidden=true;document.getElementById('coverLetterGate').hidden=false;document.getElementById('coverLetterTitle').scrollIntoView({block:'start'});};
 
-const F=(name,label,type='text',full=false,hint='')=>({name,label,type,full,hint});
+const F=(name,label,type='text',full=false,hint='',extra={})=>({name,label,type,full,hint,...extra});
+const BULLET_EXAMPLES={
+ high_school_activities:['e.g., Varsity Golf (Grades 10-12)','e.g., Marching Band','e.g., Student Council'],
+ honors_awards:['e.g., National Honor Society','e.g., High Honor Roll (4 years)','e.g., AP Scholar'],
+ interests_hobbies:['e.g., Golf and hiking','e.g., Piano / music','e.g., Robotics / coding'],
+ volunteer_activities:['e.g., Youth golf clinic volunteer','e.g., Local food pantry','e.g., Community park cleanup'],
+ post_school_clubs:['e.g., Club Golf Team','e.g., Campus Symphony','e.g., Engineering Society'],
+ other_community_involvement:['e.g., Habitat for Humanity','e.g., Peer tutoring','e.g., Campus food drive']
+};
+const JOB_EXAMPLES={
+ work_jobs:[
+  {employer:'e.g., Fox Chapel Golf Club',position:'e.g., Caddie'},
+  {employer:'Employer name',position:'Position held'}
+ ],
+ post_school_work_jobs:[
+  {employer:'e.g., Fox Chapel Golf Club',position:'e.g., Grounds / Pro Shop'},
+  {employer:'Employer name',position:'Position held'}
+ ]
+};
 const groups=[
  {id:'applicant',title:'Applicant information',number:'1',note:'I hereby apply for a Fox Chapel Golf Club Scholarship Foundation scholarship.',fields:[F('applicant_name','Name'),F('application_date','Date','text',false,'MM/DD/YYYY'),F('home_address','Home address','text',true),{type:'address_row',prefix:'home'},F('email','Email','email'),F('phone_number','Phone number (including area code)','tel',false,'(412) 555-1234'),F('age','Age'),F('birth_date','Birth date','text',false,'MM/DD/YYYY'),F('relationship','Relationship to the Fox Chapel Golf Club','relationship',true),F('club_position','Position held at Fox Chapel Golf Club'),F('employment_start_date','Start date of employment at Fox Chapel Golf Club','text',false,'MM/DD/YYYY')]},
  {id:'family',title:'Family information',number:'2',fields:[F('parent_guardian_names','Name of parent(s) / guardian(s)','text',true),F('parent_guardian_street','Street address','text',true),{type:'address_row',prefix:'parent_guardian'},{type:'parent_row',role:'mother',label:'Mother'},{type:'parent_row',role:'father',label:'Father'},F('siblings_names_and_ages','Names and ages of brothers and sisters','textarea',true)]},
- {id:'education',title:'Education',number:'3',fields:[F('high_school','High school','text',true),F('high_school_gpa','GPA'),F('high_school_graduation','Graduation date'),F('high_school_activities','High school activities (athletics, clubs, music, arts, etc.)','long',true),F('honors_awards','Honors / awards','long',true),F('test_scores','Test and score (ACT, SAT, other)','long',true),F('interests_hobbies','Interests / hobbies','long',true),F('work_jobs','Work / jobs','long',true),F('volunteer_activities','Volunteer activities / community involvement','long',true),F('fall_2027_school',`Qualified school / college for Fall ${year} you plan to attend`,'text',true),F('course_of_study','Course of study / program you wish to pursue','text',true),F('terms','Post High School Education','terms',true),F('post_school_clubs','Post high school: clubs, activities, music, arts, etc.','long',true),F('other_community_involvement','Post high school: other community / school involvement','long',true),F('post_school_work_jobs','Post high school: work / jobs','long',true)]}
+ {id:'education',title:'Education',number:'3',fields:[F('high_school','High school','text',true),F('high_school_gpa','GPA','text',false,'Format: 0.00 (e.g., 3.85)'),F('high_school_graduation','Graduation date','text',false,'MM/DD/YYYY'),F('high_school_activities','High school activities (athletics, clubs, music, arts, etc.)','bullets',true),F('honors_awards','Honors / awards','bullets',true),F('test_scores','Test and score (ACT, SAT, other)','tests',true),F('interests_hobbies','Interests / hobbies','bullets',true),F('work_jobs','Work / jobs','jobs',true),F('volunteer_activities','Volunteer activities / community involvement','bullets',true),F('fall_2027_school',`Qualified school / college for Fall ${year} you plan to attend`,'text',true),F('course_of_study','Course of study / program you wish to pursue','text',true),F('terms','Post High School Education','terms',true),F('post_school_clubs','Post high school: clubs, activities, music, arts, etc.','bullets',true),F('other_community_involvement','Post high school: other community / school involvement','bullets',true),F('post_school_work_jobs','Post high school: work / jobs','jobs',true)]}
 ];
 const labels={};
+function bulletRowHtml(name,idx,placeholder='',removable=false){
+ const ph=placeholder||'Add another item';
+ return `<div class="bullet-row"><span class="bullet-dot" aria-hidden="true">•</span><input type="text" maxlength="160" placeholder="${escapeHtml(ph)}" aria-label="${escapeHtml(labels[name]||name)} item ${idx+1}" data-bullet-input="${name}">${removable?'<button type="button" class="remove-row-btn" data-remove-row aria-label="Remove line" title="Remove line">×</button>':''}</div>`;
+}
+function otherTestRowHtml(idx,removable=false){
+ const namePh=idx===0?'Other test (e.g., AP Calculus, CLT)':'Other test name';
+ const scorePh=idx===0?'Score (e.g., 5)':'Score';
+ return `<div class="test-row test-other-row" data-test-other><input type="text" maxlength="80" placeholder="${escapeHtml(namePh)}" aria-label="Other test ${idx+1} name" data-test-other-name><input type="text" maxlength="20" placeholder="${escapeHtml(scorePh)}" aria-label="Other test ${idx+1} score" data-test-other-score>${removable?'<button type="button" class="remove-row-btn" data-remove-row aria-label="Remove test" title="Remove test">×</button>':''}</div>`;
+}
+function jobRowHtml(name,idx,example={},removable=false){
+ const empPh=example.employer||'Employer name',posPh=example.position||'Position held';
+ return `<div class="job-row" data-job-row><input type="text" maxlength="80" placeholder="${escapeHtml(empPh)}" aria-label="${escapeHtml(labels[name]||name)} ${idx+1} employer" data-job-field="employer"><input type="text" maxlength="80" placeholder="${escapeHtml(posPh)}" aria-label="${escapeHtml(labels[name]||name)} ${idx+1} position" data-job-field="position"><input type="text" inputmode="numeric" maxlength="20" placeholder="MM/DD/YYYY" aria-label="${escapeHtml(labels[name]||name)} ${idx+1} start date" data-job-field="start" data-format="date"><input type="text" maxlength="20" placeholder="MM/DD/YYYY or Present" aria-label="${escapeHtml(labels[name]||name)} ${idx+1} end date" data-job-field="end" data-format="date-or-present">${removable?'<button type="button" class="remove-row-btn" data-remove-row aria-label="Remove job" title="Remove job">×</button>':''}</div>`;
+}
 function input(f){
  if(f.type==='address_row'){
   const p=f.prefix;
@@ -91,11 +122,23 @@ function input(f){
  }
  labels[f.name]=f.label;
  if(f.type==='relationship')return `<fieldset class="full"><legend>${f.label}</legend><div class="choices">${[['employee','Employee'],['child_of_employee','Child of employee'],['caddie','Caddie']].map(([v,l])=>`<label><input type="checkbox" name="relationship_${v}">${l}</label>`).join('')}</div></fieldset>`;
- if(f.type==='terms')return `<div class="full"><h3>Post High School Education</h3><div class="terms"><div class="term-row term-head" aria-hidden="true"><span>Education</span><span>School</span><span>GPA (by semester or term)</span><span>Major / interest</span></div>${Array.from({length:6},(_,i)=>`<div class="term-row"><strong>${i+1}</strong>${[['school','School'],['gpa','GPA (by semester or term)'],['major','Major / interest']].map(([key,label])=>`<label><span class="sr-only">Education ${i+1}: ${label}</span><input name="term_${i+1}_${key}" id="term_${i+1}_${key}" maxlength="240" aria-label="Education ${i+1}: ${label}"></label>`).join('')}</div>`).join('')}</div></div>`;
+ if(f.type==='bullets'){
+  const ex=BULLET_EXAMPLES[f.name]||['Item 1','Item 2','Item 3'];
+  return `<fieldset class="full structured-group" data-bullets="${f.name}"><legend>${escapeHtml(f.label)}</legend><div class="bullet-list" data-bullet-list="${f.name}">${ex.map((ph,i)=>bulletRowHtml(f.name,i,ph,false)).join('')}</div><button type="button" class="add-row-link" data-add-bullet="${f.name}">+ Add another line</button></fieldset>`;
+ }
+ if(f.type==='tests'){
+  return `<fieldset class="full structured-group" data-tests="${f.name}"><legend>${escapeHtml(f.label)}</legend><div class="test-list" data-test-list="${f.name}"><div class="test-row test-head" aria-hidden="true"><span>Test</span><span>Score</span></div><div class="test-row" data-test-fixed="ACT"><span class="test-fixed-label">ACT</span><input type="text" inputmode="numeric" maxlength="12" placeholder="Composite score (e.g., 31)" aria-label="ACT score" data-test-score="ACT"></div><div class="test-row" data-test-fixed="SAT"><span class="test-fixed-label">SAT</span><input type="text" inputmode="numeric" maxlength="12" placeholder="Total score (e.g., 1380)" aria-label="SAT score" data-test-score="SAT"></div>${otherTestRowHtml(0,false)}</div><button type="button" class="add-row-link" data-add-test="${f.name}">+ Add another test</button></fieldset>`;
+ }
+ if(f.type==='jobs'){
+  const ex=JOB_EXAMPLES[f.name]||[{},{}];
+  return `<fieldset class="full structured-group" data-jobs="${f.name}"><legend>${escapeHtml(f.label)}</legend><div class="job-list" data-job-list="${f.name}"><div class="job-row job-head" aria-hidden="true"><span>Employer</span><span>Position</span><span>Start date</span><span>End date</span></div>${ex.map((rowEx,i)=>jobRowHtml(f.name,i,rowEx,false)).join('')}</div><button type="button" class="add-row-link" data-add-job="${f.name}">+ Add another job</button></fieldset>`;
+ }
+ if(f.type==='terms')return `<div class="full"><h3>Post High School Education</h3><div class="terms"><div class="term-row term-head" aria-hidden="true"><span>Education</span><span>School</span><span>GPA (by semester or term)</span><span>Major / interest</span></div>${Array.from({length:6},(_,i)=>`<div class="term-row"><strong>${i+1}</strong>${[['school','School','maxlength="240"'],['gpa','GPA (by semester or term)','inputmode="decimal" maxlength="5" placeholder="0.00" data-format="gpa"'],['major','Major / interest','maxlength="240"']].map(([key,label,attrs])=>`<label><span class="sr-only">Education ${i+1}: ${label}</span><input name="term_${i+1}_${key}" id="term_${i+1}_${key}" ${attrs} aria-label="Education ${i+1}: ${label}"></label>`).join('')}</div>`).join('')}</div></div>`;
  const long=['long','textarea'].includes(f.type);
- const limit=({applicant_name:160,phone_number:40,application_date:20,birth_date:20,employment_start_date:20,home_state:2,parent_guardian_state:2,home_zip:10,parent_guardian_zip:10,age:3})[f.name]||240;
- const isDateField=['application_date','birth_date','employment_start_date'].includes(f.name);
- const extraAttrs=f.name==='email'?' autocomplete="email" autocorrect="off" autocapitalize="none" spellcheck="false"':f.name==='phone_number'?' autocomplete="tel" inputmode="tel" placeholder="(412) 555-1234" data-format="phone"':f.name==='applicant_name'?' autocomplete="name"':f.name==='age'?' inputmode="numeric"':isDateField?' inputmode="numeric" placeholder="MM/DD/YYYY" data-format="date"':'';
+ const limit=({applicant_name:160,phone_number:40,application_date:20,birth_date:20,employment_start_date:20,high_school_graduation:20,high_school_gpa:5,home_state:2,parent_guardian_state:2,home_zip:10,parent_guardian_zip:10,age:3})[f.name]||240;
+ const isDateField=['application_date','birth_date','employment_start_date','high_school_graduation'].includes(f.name);
+ const isGpaField=f.name==='high_school_gpa';
+ const extraAttrs=f.name==='email'?' autocomplete="email" autocorrect="off" autocapitalize="none" spellcheck="false"':f.name==='phone_number'?' autocomplete="tel" inputmode="tel" placeholder="(412) 555-1234" data-format="phone"':f.name==='applicant_name'?' autocomplete="name"':f.name==='age'?' inputmode="numeric"':isDateField?' inputmode="numeric" placeholder="MM/DD/YYYY" data-format="date"':isGpaField?' inputmode="decimal" placeholder="0.00" data-format="gpa"':'';
  return `<div class="field ${f.full?'full':''}"><label for="${f.name}">${escapeHtml(f.label)}</label>${long?`<textarea id="${f.name}" name="${f.name}" rows="3" maxlength="8000"></textarea>`:`<input id="${f.name}" name="${f.name}" type="${f.type}" maxlength="${limit}"${extraAttrs}>`}${f.hint?`<p class="hint">${f.hint}</p>`:''}</div>`;
 }
 function yesNo(name,label){return `<fieldset class="full"><legend>${label}</legend><div class="choices"><label><input type="radio" name="${name}" value="Yes">Yes</label><label><input type="radio" name="${name}" value="No">No</label></div></fieldset>`;}
@@ -150,7 +193,48 @@ if(confirmEmailInput){
   remember();
  });
 }
-function values(){const data={};for(const el of form.elements){if(!el.name)continue;if(el.type==='checkbox')data[el.name]=el.checked;else if(el.type==='radio'){if(el.checked)data[el.name]=el.value;}else data[el.name]=el.value;}if(confirmEmailInput)data.confirmation_email=confirmEmailInput.value.trim();data.signatures=signatures;data.testApplication=false;return data;}
+function collectStructured(data){
+ for(const group of form.querySelectorAll('[data-bullets]')){
+  const name=group.dataset.bullets;
+  const items=[...group.querySelectorAll('[data-bullet-input]')].map(el=>el.value.trim().replace(/^[•*-]\s*/,'')).filter(Boolean);
+  data[name]=items.map(item=>`• ${item}`).join('\n');
+ }
+ const testGroup=form.querySelector('[data-tests="test_scores"]');
+ if(testGroup){
+  const act=testGroup.querySelector('[data-test-score="ACT"]')?.value.trim()||'';
+  const sat=testGroup.querySelector('[data-test-score="SAT"]')?.value.trim()||'';
+  const others=[...testGroup.querySelectorAll('[data-test-other]')].map(row=>({
+   name:row.querySelector('[data-test-other-name]')?.value.trim()||'',
+   score:row.querySelector('[data-test-other-score]')?.value.trim()||''
+  })).filter(o=>o.name||o.score);
+  const lines=[];
+  if(act)lines.push(`• ACT: ${act}`);
+  if(sat)lines.push(`• SAT: ${sat}`);
+  for(const o of others){
+   if(o.name&&o.score)lines.push(`• ${o.name}: ${o.score}`);
+   else if(o.name)lines.push(`• ${o.name}`);
+   else if(o.score)lines.push(`• Other: ${o.score}`);
+  }
+  data.test_scores=lines.join('\n');
+  data._structured_test_scores={act,sat,others};
+ }
+ for(const group of form.querySelectorAll('[data-jobs]')){
+  const name=group.dataset.jobs;
+  const rows=[...group.querySelectorAll('[data-job-row]')].map(row=>({
+   employer:row.querySelector('[data-job-field="employer"]')?.value.trim()||'',
+   position:row.querySelector('[data-job-field="position"]')?.value.trim()||'',
+   start:row.querySelector('[data-job-field="start"]')?.value.trim()||'',
+   end:row.querySelector('[data-job-field="end"]')?.value.trim()||''
+  })).filter(r=>r.employer||r.position||r.start||r.end);
+  data[name]=rows.map(r=>{
+   const title=[r.employer,r.position].filter(Boolean).join(' - ');
+   const dates=r.start&&r.end?`${r.start} - ${r.end}`:(r.start||r.end);
+   return title&&dates?`• ${title} (${dates})`:`• ${title||dates}`;
+  }).join('\n');
+  data[`_structured_${name}`]=rows;
+ }
+}
+function values(){const data={};for(const el of form.elements){if(!el.name)continue;if(el.type==='checkbox')data[el.name]=el.checked;else if(el.type==='radio'){if(el.checked)data[el.name]=el.value;}else data[el.name]=el.value;}collectStructured(data);if(confirmEmailInput)data.confirmation_email=confirmEmailInput.value.trim();data.signatures=signatures;data.testApplication=false;return data;}
 function cents(value){const s=String(value??'').trim().replace(/^\$/,'');if(!s)return 0;if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,2})?$/.test(s)&&!/^\.\d{1,2}$/.test(s))return NaN;const [a,b='']=s.replaceAll(',','').split('.');const n=Number(a||0)*100+Number((b+'00').slice(0,2));return Number.isSafeInteger(n)&&n<=999999999999? n:NaN;}
 function totals(data){const parsed=moneyNames.map(n=>cents(data[n]));if(parsed.some(n=>!Number.isFinite(n)))return null;const a=parsed.slice(0,3).reduce((a,b)=>a+b,0);const b=parsed.slice(3).reduce((a,b)=>a+b,0);return {annual_estimated_cost:a,total_financial_aid:b,total_not_funded:Math.max(0,a-b)};}
 const usd=n=>(n/100).toLocaleString('en-US',{style:'currency',currency:'USD'});
@@ -204,15 +288,154 @@ function normalizeDateBlur(raw){
  }
  return formatDateTyping(s).replace(/\/+$/,'');
 }
+function formatDateOrPresentTyping(raw){
+ const s=String(raw||'').trimStart();if(!s)return '';
+ if(/^[A-Za-z]/.test(s))return s.replace(/[^A-Za-z]/g,'').slice(0,12);
+ return formatDateTyping(s);
+}
+function normalizeDateOrPresentBlur(raw){
+ const s=String(raw||'').trim();if(!s)return '';
+ if(/^[A-Za-z]/.test(s))return /^(p|curr)/i.test(s)?'Present':s.replace(/[^A-Za-z]/g,'').slice(0,12);
+ return normalizeDateBlur(s);
+}
+function formatGpaTyping(raw){
+ const s=String(raw||'').replace(/[^0-9.]/g,'');if(!s)return '';
+ const dot=s.indexOf('.');
+ if(dot!==-1){
+  const whole=s.slice(0,dot).replace(/\D/g,'').slice(0,1);
+  const frac=s.slice(dot+1).replace(/\D/g,'').slice(0,2);
+  return `${whole||'0'}.${frac}`;
+ }
+ const d=s.replace(/\D/g,'').slice(0,3);
+ if(d.length<=1)return d;
+ return `${d[0]}.${d.slice(1)}`;
+}
+function normalizeGpaBlur(raw){
+ const s=formatGpaTyping(raw);if(!s)return '';
+ const [whole,frac='']=s.split('.');
+ return `${whole||'0'}.${frac.padEnd(2,'0').slice(0,2)}`;
+}
 function formatPhoneTyping(raw){let d=String(raw||'').replace(/\D/g,'');if(d.length===11&&d.startsWith('1'))d=d.slice(1);d=d.slice(0,10);if(!d)return '';if(d.length<=3)return d;if(d.length<=6)return `(${d.slice(0,3)}) ${d.slice(3)}`;return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;}
 function todayEasternFormatted(){try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'2-digit',day:'2-digit',year:'numeric'}).formatToParts(new Date());const map=Object.fromEntries(parts.map(p=>[p.type,p.value]));return `${map.month}/${map.day}/${map.year}`;}catch{const n=new Date();return `${String(n.getMonth()+1).padStart(2,'0')}/${String(n.getDate()).padStart(2,'0')}/${n.getFullYear()}`;}}
 if(form.elements.application_date&&!form.elements.application_date.value){form.elements.application_date.value=todayEasternFormatted();}
+function formatFieldValue(el,isBlur){
+ const kind=el?.dataset?.format;if(!kind)return;
+ let f=el.value;
+ if(kind==='date')f=isBlur?normalizeDateBlur(el.value):formatDateTyping(el.value);
+ else if(kind==='date-or-present')f=isBlur?normalizeDateOrPresentBlur(el.value):formatDateOrPresentTyping(el.value);
+ else if(kind==='phone')f=formatPhoneTyping(el.value);
+ else if(kind==='gpa')f=isBlur?normalizeGpaBlur(el.value):formatGpaTyping(el.value);
+ if(el.value!==f){el.value=f;if(isBlur)update();}
+}
 form.addEventListener('submit',e=>e.preventDefault());
-form.addEventListener('input',e=>{const el=e.target;if(el?.dataset?.format==='date'){const f=formatDateTyping(el.value);if(el.value!==f)el.value=f;}else if(el?.dataset?.format==='phone'){const f=formatPhoneTyping(el.value);if(el.value!==f)el.value=f;}if(Object.keys(signatures).length){signatures={};renderSignatures();document.getElementById('signatureStatus').textContent='Your answers changed. Please sign again after reviewing them.';}update();changed();});
-form.addEventListener('blur',e=>{const el=e.target;if(el?.dataset?.format==='date'){const f=normalizeDateBlur(el.value);if(el.value!==f){el.value=f;update();}}else if(el?.dataset?.format==='phone'){const f=formatPhoneTyping(el.value);if(el.value!==f){el.value=f;update();}}},true);
+form.addEventListener('click',e=>{
+ const addBullet=e.target.closest('[data-add-bullet]');
+ if(addBullet){
+  const name=addBullet.dataset.addBullet,list=form.querySelector(`[data-bullet-list="${name}"]`);
+  const count=list?.querySelectorAll('.bullet-row').length||0;
+  if(list&&count<15){list.insertAdjacentHTML('beforeend',bulletRowHtml(name,count,'Add another item',true));list.lastElementChild?.querySelector('input')?.focus();}
+  return;
+ }
+ const addTest=e.target.closest('[data-add-test]');
+ if(addTest){
+  const name=addTest.dataset.addTest,list=form.querySelector(`[data-test-list="${name}"]`);
+  const count=list?.querySelectorAll('[data-test-other]').length||0;
+  if(list&&count<8){list.insertAdjacentHTML('beforeend',otherTestRowHtml(count,true));list.lastElementChild?.querySelector('input')?.focus();}
+  return;
+ }
+ const addJob=e.target.closest('[data-add-job]');
+ if(addJob){
+  const name=addJob.dataset.addJob,list=form.querySelector(`[data-job-list="${name}"]`);
+  const count=list?.querySelectorAll('[data-job-row]').length||0;
+  if(list&&count<10){list.insertAdjacentHTML('beforeend',jobRowHtml(name,count,{},true));list.lastElementChild?.querySelector('input')?.focus();}
+  return;
+ }
+ const rem=e.target.closest('[data-remove-row]');
+ if(rem){
+  rem.closest('.bullet-row,.test-other-row,.job-row')?.remove();
+  if(Object.keys(signatures).length){signatures={};renderSignatures();document.getElementById('signatureStatus').textContent='Your answers changed. Please sign again after reviewing them.';}
+  update();changed();
+ }
+});
+form.addEventListener('keydown',e=>{
+ if(e.key==='Enter'&&e.target.matches('[data-bullet-input]')){
+  e.preventDefault();
+  const list=e.target.closest('[data-bullet-list]');if(!list)return;
+  const inputs=[...list.querySelectorAll('[data-bullet-input]')];
+  const idx=inputs.indexOf(e.target);
+  if(idx>=0&&idx<inputs.length-1){inputs[idx+1].focus();}
+  else if(e.target.value.trim()&&inputs.length<15){
+   const name=e.target.dataset.bulletInput;
+   list.insertAdjacentHTML('beforeend',bulletRowHtml(name,inputs.length,'Add another item',true));
+   list.lastElementChild?.querySelector('input')?.focus();
+  }
+ }
+});
+form.addEventListener('input',e=>{formatFieldValue(e.target,false);if(Object.keys(signatures).length){signatures={};renderSignatures();document.getElementById('signatureStatus').textContent='Your answers changed. Please sign again after reviewing them.';}update();changed();});
+form.addEventListener('blur',e=>{formatFieldValue(e.target,true);},true);
 window.addEventListener('beforeunload',e=>{if(dirty&&!document.getElementById('rememberProgress').checked){e.preventDefault();e.returnValue='';}});
 document.getElementById('saveDraft').onclick=()=>{requireCover();const fname=`Fox-Chapel-${year}-Saved-Application.json`;downloadBlob(new Blob([JSON.stringify(draft(),null,2)],{type:'application/json'}),fname);dirty=false;status.textContent=`Saved "${fname}" to your Downloads folder. Do not open it on your computer: when returning on another device, click "Open backup file" and choose "${fname}" from Downloads.`;};
-function restore(data){const savedYear=data.year||(data.schema==='fcgc-2027-v1'?'2027':null);if(!['fcgc-application-v2','fcgc-2027-v1'].includes(data.schema)||!data.answers||typeof data.answers!=='object')throw new Error('Choose a backup file saved by this application.');if(savedYear!==year)throw new Error(`This backup is for ${savedYear}. The current application is for ${year}. Keep the older file for your records.`);const answers=FCGCAnswers.normalize(data.answers);for(const el of form.elements){if(!el.name)continue;const v=answers[el.name];if(el.type==='checkbox')el.checked=v===true;else if(el.type==='radio')el.checked=el.value===v;else el.value=typeof v==='string'?v.slice(0,el.maxLength>0?el.maxLength:8000):'';if(el.dataset?.format==='date'&&el.value)el.value=normalizeDateBlur(el.value);else if(el.dataset?.format==='phone'&&el.value)el.value=formatPhoneTyping(el.value);}if(form.elements.application_date&&!form.elements.application_date.value){form.elements.application_date.value=todayEasternFormatted();}if(confirmEmailInput){const ce=typeof answers.confirmation_email==='string'?answers.confirmation_email.trim():'';confirmEmailInput.value=ce||form.elements.email?.value||'';confirmEmailCustomized=Boolean(ce&&ce!==(form.elements.email?.value||'').trim());}signatures={};for(const role of ['student','parent']){const sig=answers.signatures?.[role];if(sig&&typeof sig.name==='string'&&sig.name.length<=160&&typeof sig.at==='string'&&Number.isFinite(Date.parse(sig.at))&&(!sig.image||/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(sig.image)&&sig.image.length<250000))signatures[role]=sig;}document.getElementById('clearAttachments').click();renderSignatures();update();changed();status.textContent='Saved progress restored. Review your answers and re-select your photo and supporting documents before submitting.';}
+function restoreStructured(answers){
+ for(const group of form.querySelectorAll('[data-bullets]')){
+  const name=group.dataset.bullets,list=group.querySelector(`[data-bullet-list="${name}"]`);if(!list)continue;
+  const ex=BULLET_EXAMPLES[name]||['Item 1','Item 2','Item 3'];
+  const items=typeof answers[name]==='string'?answers[name].split(/\r?\n/).map(s=>s.trim().replace(/^[•*-]\s*/,'')).filter(Boolean):[];
+  const total=Math.max(ex.length,Math.min(items.length,15));
+  list.innerHTML=Array.from({length:total},(_,i)=>bulletRowHtml(name,i,ex[i]||'Add another item',i>=ex.length)).join('');
+  const inputs=list.querySelectorAll('[data-bullet-input]');
+  items.slice(0,total).forEach((val,i)=>{if(inputs[i])inputs[i].value=val.slice(0,160);});
+ }
+ const testGroup=form.querySelector('[data-tests="test_scores"]');
+ if(testGroup){
+  const list=testGroup.querySelector('[data-test-list="test_scores"]');
+  let act='',sat='',others=[];
+  const st=answers._structured_test_scores;
+  if(st&&typeof st==='object'){
+   act=typeof st.act==='string'?st.act:'';sat=typeof st.sat==='string'?st.sat:'';
+   if(Array.isArray(st.others))others=st.others.filter(o=>o&&(o.name||o.score)).slice(0,8);
+  }else if(typeof answers.test_scores==='string'&&answers.test_scores.trim()){
+   for(const rawLine of answers.test_scores.split(/\r?\n/)){
+    const line=rawLine.trim().replace(/^[•*-]\s*/,'');if(!line)continue;
+    const mAct=line.match(/^ACT\s*[:\-]\s*(.+)$/i),mSat=line.match(/^SAT\s*[:\-]\s*(.+)$/i);
+    if(mAct&&!act)act=mAct[1].trim();
+    else if(mSat&&!sat)sat=mSat[1].trim();
+    else{const mOther=line.match(/^([^:\-]+?)\s*[:\-]\s*(.+)$/);others.push(mOther?{name:mOther[1].trim(),score:mOther[2].trim()}:{name:line,score:''});}
+   }
+  }
+  const actEl=testGroup.querySelector('[data-test-score="ACT"]'),satEl=testGroup.querySelector('[data-test-score="SAT"]');
+  if(actEl)actEl.value=act.slice(0,12);if(satEl)satEl.value=sat.slice(0,12);
+  list.querySelectorAll('[data-test-other]').forEach(r=>r.remove());
+  const totalOther=Math.max(1,Math.min(others.length,8));
+  for(let i=0;i<totalOther;i++)list.insertAdjacentHTML('beforeend',otherTestRowHtml(i,i>0));
+  const otherRows=list.querySelectorAll('[data-test-other]');
+  others.slice(0,totalOther).forEach((o,i)=>{
+   const nEl=otherRows[i]?.querySelector('[data-test-other-name]'),sEl=otherRows[i]?.querySelector('[data-test-other-score]');
+   if(nEl)nEl.value=String(o.name||'').slice(0,80);if(sEl)sEl.value=String(o.score||'').slice(0,20);
+  });
+ }
+ for(const group of form.querySelectorAll('[data-jobs]')){
+  const name=group.dataset.jobs,list=group.querySelector(`[data-job-list="${name}"]`);if(!list)continue;
+  const ex=JOB_EXAMPLES[name]||[{},{}];
+  let rows=[];
+  const st=answers[`_structured_${name}`];
+  if(Array.isArray(st)){rows=st.filter(r=>r&&(r.employer||r.position||r.start||r.end)).slice(0,10);}
+  else if(typeof answers[name]==='string'&&answers[name].trim()){
+   rows=answers[name].split(/\r?\n/).map(s=>s.trim().replace(/^[•*-]\s*/,'')).filter(Boolean).slice(0,10).map(line=>({employer:line,position:'',start:'',end:''}));
+  }
+  list.querySelectorAll('[data-job-row]').forEach(r=>r.remove());
+  const total=Math.max(ex.length,rows.length);
+  for(let i=0;i<total;i++)list.insertAdjacentHTML('beforeend',jobRowHtml(name,i,ex[i]||{},i>=ex.length));
+  const jobRows=list.querySelectorAll('[data-job-row]');
+  rows.slice(0,total).forEach((r,i)=>{
+   const rowEl=jobRows[i];if(!rowEl)return;
+   rowEl.querySelector('[data-job-field="employer"]').value=String(r.employer||'').slice(0,80);
+   rowEl.querySelector('[data-job-field="position"]').value=String(r.position||'').slice(0,80);
+   rowEl.querySelector('[data-job-field="start"]').value=r.start?normalizeDateBlur(r.start):'';
+   rowEl.querySelector('[data-job-field="end"]').value=r.end?normalizeDateOrPresentBlur(r.end):'';
+  });
+ }
+}
+function restore(data){const savedYear=data.year||(data.schema==='fcgc-2027-v1'?'2027':null);if(!['fcgc-application-v2','fcgc-2027-v1'].includes(data.schema)||!data.answers||typeof data.answers!=='object')throw new Error('Choose a backup file saved by this application.');if(savedYear!==year)throw new Error(`This backup is for ${savedYear}. The current application is for ${year}. Keep the older file for your records.`);const answers=FCGCAnswers.normalize(data.answers);for(const el of form.elements){if(!el.name)continue;const v=answers[el.name];if(el.type==='checkbox')el.checked=v===true;else if(el.type==='radio')el.checked=el.value===v;else el.value=typeof v==='string'?v.slice(0,el.maxLength>0?el.maxLength:8000):'';}restoreStructured(answers);form.querySelectorAll('[data-format]').forEach(el=>{if(el.value)formatFieldValue(el,true);});if(form.elements.application_date&&!form.elements.application_date.value){form.elements.application_date.value=todayEasternFormatted();}if(confirmEmailInput){const ce=typeof answers.confirmation_email==='string'?answers.confirmation_email.trim():'';confirmEmailInput.value=ce||form.elements.email?.value||'';confirmEmailCustomized=Boolean(ce&&ce!==(form.elements.email?.value||'').trim());}signatures={};for(const role of ['student','parent']){const sig=answers.signatures?.[role];if(sig&&typeof sig.name==='string'&&sig.name.length<=160&&typeof sig.at==='string'&&Number.isFinite(Date.parse(sig.at))&&(!sig.image||/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(sig.image)&&sig.image.length<250000))signatures[role]=sig;}document.getElementById('clearAttachments').click();renderSignatures();update();changed();status.textContent='Saved progress restored. Review your answers and re-select your photo and supporting documents before submitting.';}
 document.getElementById('loadDraft').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>800000)throw new Error('This backup file is too large.');restore(JSON.parse(await file.text()));}catch(err){status.textContent=err.message;}e.target.value='';};
 document.getElementById('rememberProgress').onchange=e=>{if(e.target.checked)remember();else{try{localStorage.removeItem(draftKey);}catch{}if(restoreBanner)restoreBanner.hidden=true;status.textContent='Browser auto-save is off and cleared. Open "Switching computers" below if you want to download a backup file.';}};
 document.getElementById('forgetProgress').onclick=()=>{try{localStorage.removeItem(draftKey);}catch{}if(restoreBanner)restoreBanner.hidden=true;status.textContent='Saved progress cleared from this browser. Your currently open answers remain on screen until you close this tab.';};
