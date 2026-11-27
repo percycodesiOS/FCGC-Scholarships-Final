@@ -21,7 +21,12 @@ async function appendAttachments(bytes, files) {
   const { PDFDocument, PDFName } = PDFLib;
   const packet = await PDFDocument.load(bytes);
   for (const file of files) {
-    const buffer = await file.arrayBuffer();
+    let buffer;
+    try {
+      buffer = file.bytes ? file.bytes : await file.arrayBuffer();
+    } catch {
+      throw new Error(`Could not read ${file.name}. Please re-select your supporting documents in Step 2 and try again.`);
+    }
     if (file.type === 'application/pdf') {
       let source;
       try { source = await PDFDocument.load(buffer); }
@@ -48,25 +53,59 @@ async function appendAttachments(bytes, files) {
 }
 
 const supportingFiles = document.getElementById('supportingFiles');
-function describeAttachments() {
-  const files = Array.from(supportingFiles.files);
+let preparedSupportingFiles = [];
+let supportingLoadPromise = null;
+let supportingLoadToken = 0;
+
+async function describeAttachments() {
+  const token = ++supportingLoadToken;
+  const files = Array.from(supportingFiles.files || []);
   const status = document.getElementById('attachmentStatus');
+  preparedSupportingFiles = [];
+  document.getElementById('clearAttachments').hidden = !files.length;
+  document.getElementById('downloadReady').hidden = true;
+  if (!files.length) {
+    status.className = 'small';
+    status.textContent = 'No supporting files selected. Explain pending or unavailable documents in the application.';
+    window.dispatchEvent(new CustomEvent('fcgc-attachments-changed'));
+    return;
+  }
   try {
     validateAttachments(files);
     status.className = 'small';
-    status.textContent = files.length ? `${files.length} file(s) selected: ${files.map(file => file.name).join('; ')}. They will follow your application in the downloaded packet.` : 'No supporting files selected. Explain pending or unavailable documents in the application.';
+    status.textContent = `Reading ${files.length} selected file(s)…`;
+    const buffered = [];
+    for (const file of files) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (token !== supportingLoadToken) return;
+      buffered.push({ name: file.name, type: file.type, size: file.size, bytes });
+    }
+    if (token !== supportingLoadToken) return;
+    preparedSupportingFiles = buffered;
+    status.className = 'small';
+    status.textContent = `${buffered.length} file(s) ready: ${buffered.map(file => file.name).join('; ')}. They will follow your application in the downloaded packet.`;
   } catch (error) {
+    if (token !== supportingLoadToken) return;
+    preparedSupportingFiles = [];
     status.className = 'error';
-    status.textContent = error.message;
+    status.textContent = error instanceof Error ? error.message : 'Could not read one of the selected files. Please try selecting them again.';
   }
-  document.getElementById('clearAttachments').hidden = !files.length;
-  document.getElementById('downloadReady').hidden = true;
+  window.dispatchEvent(new CustomEvent('fcgc-attachments-changed'));
 }
-supportingFiles.addEventListener('change', describeAttachments);
+supportingFiles.addEventListener('change', () => { supportingLoadPromise = describeAttachments(); });
 document.getElementById('clearAttachments').addEventListener('click', () => {
+  supportingLoadToken++;
+  preparedSupportingFiles = [];
+  supportingLoadPromise = null;
   supportingFiles.value = '';
   describeAttachments();
 });
+window.FCGCAttachments = {
+  async getPreparedFiles() {
+    if (supportingLoadPromise) await supportingLoadPromise;
+    return preparedSupportingFiles.length ? preparedSupportingFiles : Array.from(supportingFiles.files || []);
+  },
+};
 
 // Dedicated Applicant Digital Photo uploader with automatic browser resize/compression to crisp JPEG.
 let preparedPhoto = null;
