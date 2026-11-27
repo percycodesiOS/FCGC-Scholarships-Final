@@ -12,7 +12,7 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=n
  function wrap(text,width,size=9){const result=[];for(const para of clean(text).split('\n')){if(!para){result.push('');continue;}let line='';for(const word of para.split(/\s+/)){if(font.widthOfTextAtSize((line?line+' ':'')+word,size)<=width){line+=(line?' ':'')+word;continue;}if(line){result.push(line);line='';}let rest=word;while(font.widthOfTextAtSize(rest,size)>width){let n=1;while(n<rest.length&&font.widthOfTextAtSize(rest.slice(0,n+1),size)<=width)n++;result.push(rest.slice(0,n));rest=rest.slice(n);}line=rest;}result.push(line);}return result;}
  function encode(text,label){try{font.encodeText(clean(text).replaceAll('\n',' '));}catch{throw new Error(`The answer for ${label} has a symbol this PDF cannot print. Replace emoji or unusual symbols and try again.`);}}
  for(const patch of await patchResponse.json()){
-  const page=doc.getPage(patch.page),value=patch.kind==='footer'?`March ${config.year}`:patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='awardsYear'?`SCHOLARSHIP OR GRANT AWARDED FOR ${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?'Applicant digital photo uploaded with online application.':patch.kind==='destination'?'Complete and submit this application on the Foundation website.':`Deadline: ${config.deadline}`;
+  const page=doc.getPage(patch.page),value=patch.kind==='footer'?`March ${config.year}`:patch.kind==='year'?config.year+(patch.suffix||''):patch.kind==='academicYear'?`${config.year}-${Number(config.year)+1}`:patch.kind==='awardsYear'?`SCHOLARSHIP OR GRANT AWARDED FOR ${config.year}-${Number(config.year)+1}`:patch.kind==='photo'?'Before submitting your application, upload a digital photo of yourself in the "Upload applicant photo" section of the online form.':patch.kind==='destination'?'Complete and submit this application on the Foundation website.':`Deadline: ${config.deadline}`;
   const face=patch.bold?bold:font;encode(value,patch.kind);let size=patch.size;
   while(size>6.5&&face.widthOfTextAtSize(value,size)>patch.width)size-=.1;
   page.drawRectangle({x:patch.x,y:patch.y,width:patch.width,height:patch.height,color:rgb(1,1,1)});
@@ -93,7 +93,7 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=n
  // Personalize a copy of its salutation; the master letter and body remain unchanged.
  {
   let response=config.customCoverLetter?await fetch('/api/cover-letter',{cache:'no-store'}):null;
-  if(!response||!response.ok)response=await fetch('cover-letter.pdf?v=20261104-letter-restored');
+  if(!response||!response.ok)response=await fetch('cover-letter.pdf?v=20261127-f4709175');
   if(!response.ok)throw new Error('The original cover letter could not load. Please try the download again.');
   const cover=await PDFDocument.load(await response.arrayBuffer());
   if(!blank){

@@ -793,7 +793,7 @@ export default function Manager({
                     </label>
                     <a
                       className="button secondary"
-                      href={coverMeta.custom ? '/api/cover-letter' : '/apply/cover-letter.pdf'}
+                      href={coverMeta.custom ? '/api/cover-letter' : '/apply/cover-letter.pdf?v=20261127-f4709175'}
                       target="_blank"
                       rel="noopener"
                     >
