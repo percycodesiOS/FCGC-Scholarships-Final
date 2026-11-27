@@ -16,7 +16,7 @@ export default async function Page({
   if (!user) {
     const reqHeaders = await headers();
     const host = (reqHeaders.get('host') || '').toLowerCase();
-    const isChatGptHost = host.endsWith('.chatgpt.site') || host.startsWith('localhost') || host.startsWith('127.0.0.1');
+    const isChatGptHost = host.endsWith('.chatgpt.site');
     const signedChatGpt = isChatGptHost ? await getChatGPTUser() : null;
     let microsoftReady = false;
     try {
@@ -27,11 +27,11 @@ export default async function Page({
     const params = searchParams ? await searchParams : {};
     const authNote =
       params.auth === 'unauthorized'
-        ? 'That Microsoft account is not on the authorized Foundation editor list. Sign in with an authorized Club email.'
+        ? 'That Office 365 account is not on the authorized Foundation editor list. Sign in with an authorized Club email.'
         : params.auth === 'not-configured'
-          ? 'Club Microsoft 365 sign-in becomes active as soon as the one-time Microsoft Entra app setup is saved.'
+          ? 'Office 365 sign-in is not configured yet. Verify the Microsoft Entra Worker variables and secrets in Cloudflare.'
           : params.auth
-            ? 'Microsoft sign-in did not finish. Please try again.'
+            ? 'Office 365 sign-in did not finish. Please try again.'
             : null;
 
     return (
@@ -46,15 +46,21 @@ export default async function Page({
           {authNote ||
             (signedChatGpt
               ? 'This account does not have administrative access. Sign in with an authorized Foundation account.'
-              : 'Sign in with an authorized Fox Chapel Golf Club Microsoft 365 account to manage the scholarship website.')}
+              : 'Sign in with an authorized Fox Chapel Golf Club Office 365 account to manage the scholarship website.')}
         </p>
         <div className="v2-button-row" style={{ justifyContent: 'center', marginTop: '14px' }}>
-          {microsoftReady && (
+          {microsoftReady ? (
             <a className="button" href="/api/auth/microsoft" target="_top">
-              Sign in with Club Microsoft 365 ↗
+              Sign in with Office 365 Account ↗
             </a>
+          ) : (
+            !isChatGptHost && (
+              <p className="small">
+                Office 365 sign-in requires the Cloudflare Worker Microsoft Entra settings (`MS_CLIENT_ID`, `MS_TENANT_ID`, and `MS_CLIENT_SECRET`).
+              </p>
+            )
           )}
-          {(isChatGptHost || !microsoftReady) && (
+          {isChatGptHost && (
             <a
               className={microsoftReady ? 'button secondary' : 'button'}
               href={

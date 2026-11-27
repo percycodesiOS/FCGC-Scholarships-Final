@@ -20,6 +20,12 @@ const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_date: "2026-05-15",
   compatibility_flags: ["nodejs_compat"],
+  keep_vars: true,
+  vars: {
+    MS_CLIENT_ID: "8506e4b7-3703-4ca3-ab09-afa2587780da",
+    MS_TENANT_ID: "b68946c5-93e6-4efc-a220-8311e143f87b",
+    MS_FROM_EMAIL: "scholarshipfoundation@foxchapelgolfclub.com",
+  },
   d1_databases: d1
     ? [
         {

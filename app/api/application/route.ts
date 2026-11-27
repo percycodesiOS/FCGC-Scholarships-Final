@@ -13,7 +13,8 @@ export async function GET() {
   const recipients = content.submissionRecipients;
   let connected = false;
   try {
-    connected = (await mailStatus()).connected;
+    const status = await mailStatus();
+    connected = status.configured && status.connected;
   } catch {
     connected = false;
   }
