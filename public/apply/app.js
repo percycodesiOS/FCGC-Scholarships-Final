@@ -5,7 +5,7 @@ const year=config.year,academicYear=`${year}-${Number(year)+1}`;
 let coverAcknowledged=false;
 const coverVersion=config.coverLetterVersion||`${year}:f470917571b9a467`;
 const coverCheck=document.getElementById('coverLetterAcknowledgment'),eligCheck=document.getElementById('eligibilityAcknowledgment'),beginButton=document.getElementById('beginApplication');
-const coverScrollbox=document.getElementById('coverScrollbox'),coverReaderShell=document.getElementById('coverReaderShell'),coverReadProgress=document.getElementById('coverReadProgress'),coverScrollWarning=document.getElementById('coverScrollWarning'),ackBlock=document.getElementById('acknowledgmentsBlock');
+const coverScrollbox=document.getElementById('coverScrollbox'),coverReaderShell=document.getElementById('coverReaderShell'),coverReadProgress=document.getElementById('coverReadProgress'),coverScrollWarning=document.getElementById('coverScrollWarning'),ackBlock=document.getElementById('acknowledgmentsBlock'),coverPrintBar=document.getElementById('coverPrintBar');
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(Array.isArray(config.eligibility)&&config.eligibility.length){
  const eligList=document.getElementById('coverEligibilityList');
@@ -24,6 +24,7 @@ function unlockAcknowledgments(){
   coverReadProgress.textContent='✓ Both pages reviewed. Check both boxes below to continue.';
   coverReadProgress.parentElement?.classList.add('read-complete');
  }
+ if(coverPrintBar)coverPrintBar.hidden=false;
  updateBeginEnabled();
 }
 function checkCoverScroll(){
@@ -68,7 +69,7 @@ function requireCover(){if(!letterScrolledToEnd||!coverAcknowledged||!coverCheck
 coverCheck.onchange=updateBeginEnabled;
 if(eligCheck)eligCheck.onchange=updateBeginEnabled;
 beginButton.onclick=()=>{if(!letterScrolledToEnd){warnMustScroll();return;}if(!coverCheck.checked||(eligCheck&&!eligCheck.checked))return;coverAcknowledged=true;document.getElementById('coverLetterGate').hidden=true;document.getElementById('applicationWorkflow').hidden=false;document.getElementById('applicant_name').focus();};
-document.getElementById('reviewCover').onclick=()=>{coverAcknowledged=false;coverCheck.checked=false;if(eligCheck)eligCheck.checked=false;if(coverScrollbox){letterScrolledToEnd=false;coverCheck.disabled=true;if(eligCheck)eligCheck.disabled=true;if(ackBlock)ackBlock.classList.add('ack-locked');if(coverScrollWarning)coverScrollWarning.hidden=true;if(coverReadProgress){coverReadProgress.textContent="Please carefully read pages one and two of the Foundation's cover letter. Once you reach the end of page two, the acknowledgment box will unlock to allow you to continue with the application.";coverReadProgress.parentElement?.classList.remove('read-complete');}coverScrollbox.scrollTop=0;}updateBeginEnabled();document.getElementById('applicationWorkflow').hidden=true;document.getElementById('coverLetterGate').hidden=false;document.getElementById('coverLetterTitle').scrollIntoView({block:'start'});};
+document.getElementById('reviewCover').onclick=()=>{coverAcknowledged=false;coverCheck.checked=false;if(eligCheck)eligCheck.checked=false;if(coverScrollbox){letterScrolledToEnd=false;coverCheck.disabled=true;if(eligCheck)eligCheck.disabled=true;if(ackBlock)ackBlock.classList.add('ack-locked');if(coverScrollWarning)coverScrollWarning.hidden=true;if(coverReadProgress){coverReadProgress.textContent="Please carefully read pages one and two of the Foundation's cover letter. Once you reach the end of page two, the acknowledgment box will unlock to allow you to continue with the application.";coverReadProgress.parentElement?.classList.remove('read-complete');}if(coverPrintBar)coverPrintBar.hidden=true;coverScrollbox.scrollTop=0;}updateBeginEnabled();document.getElementById('applicationWorkflow').hidden=true;document.getElementById('coverLetterGate').hidden=false;document.getElementById('coverLetterTitle').scrollIntoView({block:'start'});};
 
 const F=(name,label,type='text',full=false,hint='')=>({name,label,type,full,hint});
 const groups=[
