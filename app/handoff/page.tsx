@@ -1,4 +1,86 @@
 import { redirect } from 'next/navigation';
 import { editorUser } from '../../lib/auth';
+
 export const dynamic = 'force-dynamic';
-export default async function Handoff(){if(!await editorUser())redirect('/manage');return <main className="guide"><a className="text-link" href="/">← Scholarship website</a><p className="eyebrow">FOR OFFICIAL ADMIN USE ONLY</p><h1>Keep the scholarship<br/>ready for the next year.</h1><h2>Update the year and deadline</h2><ol><li>Open <a href="/manage">Manage scholarship</a> and sign in with your authorized account.</li><li>Change the application year and its full deadline, including time and time zone.</li><li>Save to website. The online form and newly generated PDFs use these settings together.</li><li>Open the application and generate a clearly marked test PDF to check the new year and deadline against the separately reviewed cover letter.</li></ol><p>The PDF keeps the approved Excel layout. Changes to the application questions or printed layout require a matching template update.</p><h2>Choose who receives applications</h2><p>In Contact & delivery, enter one email address per line. The first is the primary Foundation address printed on the application. Applications go to scholarshipfoundation@foxchapelgolfclub.com. Add or replace addresses here when needed, then save.</p><h2>Connect the sending mailbox</h2><p>The Email connection panel shows whether Microsoft / Outlook is connected. One-time Microsoft application registration and mailbox authorization are required. Janet signs in with jmacek@foxchapelgolfclub.com and authorizes sending from the shared Scholarship Foundation mailbox. Opening Outlook alone does not connect the website. Until connected, students can save progress and download signed PDFs for their records. The form directs them to contact the Foundation for help; the standard application is completed on this website.</p><h2>Student progress and signatures</h2><p>Students can download a progress file and reopen it on another device. Remember my progress is optional and should be used only on a private device. Supporting documents must be selected again after returning. A signing window accepts a drawn or typed electronic signature with the signer’s consent. Editing answers clears signatures so the changed application can be reviewed and signed again.</p><h2>What happens when a student submits?</h2><p>The site creates one completed PDF with the personalized original cover letter, answers, totals, signatures and selected supporting documents, then sends it through the authorized Microsoft mailbox to the configured recipients. A separate confirmation email goes to the student with a reference and photo reminder. A website confirmation means Microsoft accepted the email for delivery; it is not a scholarship decision or proof that the recipient has read it. An uncertain send is not automatically repeated. Keep the confirmation reference and check the sending mailbox if a delivery needs review.</p><p>The website does not store completed application PDFs. It retains a minimal submission receipt for duplicate protection. Draft answers stay on the student’s device.</p><h2>Keep a backup</h2><p>Download the current content backup after important changes and keep it with the website package and approved Excel master. Neither website download includes mailbox credentials or student applications.</p><div className="guide-downloads"><a className="button" href="/api/package" download>Download website package ↗</a><a className="button secondary" href="/api/backup">Download current content backup</a></div></main>}
+
+export default async function Handoff() {
+  if (!(await editorUser())) redirect('/manage');
+  return (
+    <main className="guide">
+      <a className="text-link" href="/manage">
+        ← Back to Manage scholarship
+      </a>
+      <p className="eyebrow">FOR OFFICIAL ADMIN USE ONLY</p>
+      <h1>
+        Keep the scholarship
+        <br />
+        ready for the next year.
+      </h1>
+
+      <h2>1. Start a new scholarship year (4-step wizard)</h2>
+      <ol>
+        <li>
+          Open <a href="/manage">Manage scholarship</a> and sign in with your authorized Club Office 365 account.
+        </li>
+        <li>
+          Click the <strong>New year wizard</strong> tab. Pick the new year, deadline date, and Eastern Time cutoff.
+        </li>
+        <li>
+          Review the automatically updated dates in Eligibility and Checklist, then preview the website and click{' '}
+          <strong>Publish changes</strong>.
+        </li>
+        <li>
+          If the official 2-page Foundation Cover Letter changed, upload the new PDF under{' '}
+          <strong>Edit website → Contact details &amp; application recipients → Official 2-Page Cover Letter PDF</strong>.
+        </li>
+      </ol>
+
+      <h2>2. Choose who receives completed applications</h2>
+      <p>
+        Under <strong>Edit website → Where completed applications are emailed</strong>, add or remove recipient email
+        chips (up to 5). The first address is the primary Foundation mailbox (
+        <code>scholarshipfoundation@foxchapelgolfclub.com</code>).
+      </p>
+
+      <h2>3. Check or reconnect the Office 365 sending mailbox</h2>
+      <p>
+        Open the <strong>Email &amp; submissions</strong> tab to check mailbox health, look up any student Reference ID,
+        or reconnect Outlook if Microsoft ever requests a fresh sign-in. Sign in with{' '}
+        <code>jmacek@foxchapelgolfclub.com</code> to authorize sending from the shared Scholarship Foundation mailbox.
+      </p>
+
+      <h2>4. What students experience &amp; what arrives in Outlook</h2>
+      <p>
+        Students read and scroll through both pages of the cover letter, complete Sections 1 through 6 (with automatic
+        browser saving, formatted dates/phone/GPA, bulleted lists, and auto-calculated financial totals), upload their
+        JPG/PNG applicant photo and supporting PDFs, sign electronically, and preview their complete packet before
+        clicking Submit.
+      </p>
+      <p>
+        Each submission delivers one print-ready PDF (Applicant Photo on Page 1, personalized cover letter, completed
+        application, and supporting documents at the back) plus a separate standalone <code>.jpg</code> portrait to the
+        Foundation inbox, and sends a confirmation receipt to the student’s chosen confirmation email.
+      </p>
+      <p>
+        For applicant privacy, completed PDFs and student names are never stored on the website server. Only anonymous
+        delivery receipts are retained so you can verify a student’s Reference ID.
+      </p>
+
+      <h2>5. Committee showcase, 1-click Undo &amp; backups</h2>
+      <p>
+        Open the <strong>Committee showcase &amp; backups</strong> tab anytime to print the 1-page Committee Fact Sheet,
+        restore an earlier version with 1-click Undo, or download a settings backup or full website package. Exports
+        never include secrets or student applications.
+      </p>
+
+      <div className="guide-downloads">
+        <a className="button" href="/api/package" download>
+          Download website package ↗
+        </a>
+        <a className="button secondary" href="/api/backup">
+          Download current content backup
+        </a>
+      </div>
+    </main>
+  );
+}

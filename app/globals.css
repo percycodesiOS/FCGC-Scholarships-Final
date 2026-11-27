@@ -243,6 +243,39 @@
   margin-bottom: 14px;
   color: var(--green);
 }
+/* Fix Preview website inside .manager (replace 100vw full-bleed padding so wide monitors never clip or squish) */
+.preview-frame {
+  border: 2px solid #b5bea7;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cream);
+  box-shadow: 0 8px 28px rgba(16, 47, 41, 0.1);
+}
+.preview-frame .preview-label {
+  background: #e5dfca;
+  color: #2b3f36;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-bottom: 1px solid #c9c2a9;
+}
+.preview-frame .hero,
+.preview-frame .deadline-bar,
+.preview-frame .application-band,
+.preview-frame .questions {
+  padding-inline: 5%;
+}
+.preview-frame .hero {
+  gap: 44px;
+  min-height: 490px;
+}
+.preview-frame .application-band,
+.preview-frame .questions {
+  gap: 56px;
+}
+.preview-frame .section {
+  padding: 64px 5%;
+}
 .v2-admin-shell .check {
   align-items: center;
   font-size: 14px;

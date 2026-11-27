@@ -14,7 +14,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'edit', label: 'Edit website' },
   { id: 'wizard', label: 'New year wizard' },
   { id: 'email', label: 'Email & submissions' },
-  { id: 'safety', label: 'Safety net & committee' },
+  { id: 'safety', label: 'Committee showcase & backups' },
 ];
 
 function formatEasternPreview(wallIso: string): string {
@@ -424,7 +424,7 @@ export default function Manager({
       {preview ? (
         <div className="preview-frame">
           <p className="preview-label">
-            LIVE PREVIEW — Visitors do not see these changes until you click “Publish changes”.
+            LIVE PREVIEW: Visitors do not see these changes until you click “Publish changes”.
           </p>
           <Scholarship data={data} preview />
         </div>
@@ -481,14 +481,14 @@ export default function Manager({
                 </article>
 
                 <article className="v2-status-card">
-                  <span className="v2-pill ok">● Security active</span>
-                  <h3>Privacy &amp; Safety Built In</h3>
+                  <span className="v2-pill ok">● Committee-ready</span>
+                  <h3>Committee Showcase &amp; Safety Net</h3>
                   <p>
-                    Automatic website security is on. Student PDFs and photos go straight to Outlook and are never
-                    stored on the website server.
+                    View and print the full summary of every website, application, and security upgrade for Kent and the
+                    Scholarship Committee.
                   </p>
                   <button type="button" className="secondary" onClick={() => setTab('safety')}>
-                    Open printable committee sheet
+                    Open committee showcase &amp; print sheet
                   </button>
                 </article>
               </div>
@@ -624,8 +624,8 @@ export default function Manager({
               <section className="editor-section">
                 <h2>3. Eligibility &amp; checklist (visual cards)</h2>
                 <p className="fine">
-                  Edit each bullet in its own card. Use Move Up, Move Down, or Add Item — blank lines are cleaned up
-                  automatically.
+                  Edit each bullet in its own card. Use Move Up, Move Down, or Add Item (blank lines are cleaned up
+                  automatically).
                 </p>
 
                 <div className="v2-list-header">
@@ -891,6 +891,8 @@ export default function Manager({
 
           {tab === 'safety' && (
             <div role="tabpanel" aria-labelledby="tab-safety" className="v2-panel v2-stack">
+              <CommitteeSheet data={data} />
+
               <section className="editor-section">
                 <p className="eyebrow">1-CLICK UNDO · RECENT SAVED VERSIONS</p>
                 <h2>Version history</h2>
@@ -969,8 +971,6 @@ export default function Manager({
                   />
                 </label>
               </section>
-
-              <CommitteeSheet data={data} />
             </div>
           )}
         </fieldset>

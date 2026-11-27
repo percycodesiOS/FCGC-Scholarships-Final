@@ -122,7 +122,7 @@ export default function Scholarship({
             </p>
           </div>
           <div className="application-options">
-            <a className="button light application-primary" href="/apply/index.html">
+            <a className="button light application-primary" href="/apply/">
               <span>
                 {closed ? `View the ${d.year} application (closed)` : `Complete the ${d.year} application`}
               </span>
@@ -160,8 +160,8 @@ export default function Scholarship({
                 in the application.
               </p>
               <p>
-                Upload a digital photo of the applicant directly inside the online application — everything is delivered
-                together in one submission.
+                Upload a digital photo of the applicant directly inside the online application so everything is delivered
+                together in one organized submission.
               </p>
             </article>
             <ul className="requirements">
