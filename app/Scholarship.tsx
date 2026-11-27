@@ -1,4 +1,4 @@
-import type { Content } from '../lib/content';
+import { defaults, type Content } from '../lib/content';
 import { isDeadlinePassed } from '../lib/deadline';
 
 export default function Scholarship({
@@ -22,6 +22,11 @@ export default function Scholarship({
     addressLines.length > 1
       ? addressLines.slice(1).join(' · ')
       : addressLines[0] || '426 Fox Chapel Road · Pittsburgh, PA 15238';
+
+  const savedMs = d.updatedAt ? Date.parse(d.updatedAt) : NaN;
+  const siteMs = defaults.updatedAt ? Date.parse(defaults.updatedAt) : NaN;
+  const latestUpdatedMs = Math.max(Number.isFinite(savedMs) ? savedMs : 0, Number.isFinite(siteMs) ? siteMs : 0);
+  const effectiveUpdatedAt = latestUpdatedMs > 0 ? new Date(latestUpdatedMs) : null;
 
   return (
     <div className="site-shell">
@@ -52,9 +57,6 @@ export default function Scholarship({
               <span>A brighter next chapter.</span>
             </h1>
             <p className="hero-intro">{d.intro}</p>
-            <a className="button light" href="#begin">
-              Start with the application guide <span>↗</span>
-            </a>
             <p className="hero-note">A community invested in your future.</p>
           </div>
           <div className="hero-art" aria-hidden="true">
@@ -105,9 +107,6 @@ export default function Scholarship({
                 </li>
               ))}
             </ol>
-            <a className="text-link" href="/apply/index.html">
-              Open the current application ↗
-            </a>
           </div>
         </section>
         <section id="begin" className="application-band">
@@ -119,8 +118,7 @@ export default function Scholarship({
               at your own pace.
             </h2>
             <p>
-              Read the instructions, gather your materials, and complete the current application. Keep a copy for your
-              records.
+              Read the cover letter and eligibility requirements, gather your materials, and complete the current application. Keep a copy for your records.
             </p>
           </div>
           <div className="application-options">
@@ -130,13 +128,8 @@ export default function Scholarship({
               </span>
               <span aria-hidden="true">↗</span>
             </a>
-            <p className="application-support">Save progress, calculate totals, sign, and download your PDF</p>
-            <a className="application-download" href="/apply/index.html#cover-letter">
-              Read the cover letter
-              <span aria-hidden="true">↗</span>
-            </a>
-            <p className="application-download-note">
-              Complete the application on this website, then keep a PDF copy.
+            <p className="application-support">
+              Starts with the cover letter and acknowledgments. Save progress, calculate totals, upload your photo and documents, sign, and download your PDF.
             </p>
             <p className="privacy-note">
               Save progress on your own device. Submit sends the completed PDF and selected documents to the recipients
@@ -209,12 +202,17 @@ export default function Scholarship({
               your next step?
             </h2>
           </div>
-          <div>
-            <p>Contact the Club Front Office or the Scholarship Foundation.</p>
-            <a href={'mailto:' + d.email}>{d.email}</a>
-            <a href={'tel:' + d.phone.replace(/[^+\d]/g, '')}>{d.phone}</a>
+          <div className="contact-channels">
+            <div className="contact-item">
+              <span className="contact-label">Scholarship Foundation (Email)</span>
+              <a href={'mailto:' + d.email}>{d.email}</a>
+            </div>
+            <div className="contact-item">
+              <span className="contact-label">Club Front Office (Phone)</span>
+              <a href={'tel:' + d.phone.replace(/[^+\d]/g, '')}>{d.phone}</a>
+            </div>
             <p className="fine">
-              Applications are completed and submitted on this website. Contact us if you need help using the form.
+              Applications are completed and submitted on this website. Email the Scholarship Foundation or call the Club Front Office if you need help using the form.
             </p>
           </div>
         </section>
@@ -232,8 +230,8 @@ export default function Scholarship({
           <small>
             {preview
               ? 'Unsaved preview'
-              : d.updatedAt
-                ? 'Page updated ' + new Date(d.updatedAt).toLocaleDateString('en-US', { timeZone: 'America/New_York' })
+              : effectiveUpdatedAt
+                ? 'Page updated ' + effectiveUpdatedAt.toLocaleDateString('en-US', { timeZone: 'America/New_York' })
                 : d.year + ' scholarship application'}
           </small>
         </div>

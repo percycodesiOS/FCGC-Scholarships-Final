@@ -82,10 +82,10 @@ function clearPhotoPreviewUrl() {
 async function normalizePhotoToJpeg(file) {
   const lowerName = (file.name || '').toLowerCase();
   if (lowerName.endsWith('.heic') || lowerName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
-    throw new Error('iPhone HEIC photos are not supported directly. Please choose a JPG or PNG photo (on iPhone, pick Options → Most Compatible when sharing or upload a JPG copy).');
+    throw new Error('Apple HEIC photos cannot be uploaded from a computer. Quick fix: upload directly from your iPhone (it converts automatically to JPG), or open the photo, take a screenshot, and upload that JPG or PNG image.');
   }
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) && !/\.(jpe?g|png|webp)$/i.test(lowerName)) {
-    throw new Error('Choose a JPG, PNG, or WebP photo of the applicant.');
+  if (!['image/jpeg', 'image/png'].includes(file.type) && !/\.(jpe?g|png)$/i.test(lowerName)) {
+    throw new Error('Applicant photos must be a standard JPG or PNG image.');
   }
   if (file.size > 20 * 1024 * 1024) {
     throw new Error('Choose a photo smaller than 20 MB.');

@@ -285,6 +285,7 @@ export function applySecurityHeaders(request: Request, response: Response): Resp
 
   const isAdminOrApi =
     url.pathname.startsWith('/manage') ||
+    url.pathname.startsWith('/admin') ||
     url.pathname.startsWith('/handoff') ||
     url.pathname.startsWith('/api/');
 

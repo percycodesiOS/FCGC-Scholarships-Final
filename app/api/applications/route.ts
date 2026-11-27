@@ -57,6 +57,8 @@ export async function POST(request: Request) {
     const id = value('submissionId');
     const name = value('name');
     const email = value('email');
+    const rawConfirmationEmail = value('confirmationEmail');
+    const confirmationEmail = rawConfirmationEmail || email;
     const age = Number(value('age'));
     const pdf = form.get('pdf');
 
@@ -70,6 +72,9 @@ export async function POST(request: Request) {
       email.length > 240
     ) {
       throw new Error('Check the applicant name and email.');
+    }
+    if (!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(confirmationEmail) || confirmationEmail.length > 240) {
+      throw new Error('Check the confirmation email address.');
     }
     if (value('year') !== content.year || value('revision') !== content.revision) {
       throw new Error(
@@ -185,6 +190,7 @@ export async function POST(request: Request) {
         year: content.year,
         name,
         email,
+        confirmationEmail,
         recipients: content.submissionRecipients,
         deadline: content.deadline,
         testApplication,

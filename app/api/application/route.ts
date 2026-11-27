@@ -44,6 +44,7 @@ export async function GET() {
       deadlinePassed,
       closedReason,
       closedNotice: content.closedNotice,
+      eligibility: content.eligibility,
       customCoverLetter,
       submissionEmail: recipients[0],
       submissionRecipients: recipients,

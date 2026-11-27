@@ -1,12 +1,17 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Fox Chapel Scholarship Application</title><link rel="stylesheet" href="style.css?v=20261104-review-packet"><script defer src="pdf-lib.min.js"></script><script defer src="attachments.js?v=20261104-letter-restored"></script><script defer src="answers.js?v=20261104-letter-restored"></script><script defer src="pdf.js?v=20261127-f4709175"></script><script defer src="app.js?v=20261127-f4709175"></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Fox Chapel Scholarship Application</title><link rel="stylesheet" href="style.css?v=20261127-v2"><script defer src="pdf-lib.min.js"></script><script defer src="attachments.js?v=20261127-v2"></script><script defer src="answers.js?v=20261127-v2"></script><script defer src="pdf.js?v=20261127-v2"></script><script defer src="app.js?v=20261127-v2"></script></head>
 <body><div class="site-bar"><a href="/">← Scholarship Foundation</a></div>
 <header class="site-hero"><p class="eyebrow">FOX CHAPEL GOLF CLUB · SCHOLARSHIP FOUNDATION</p><h1>Your next chapter<br>starts here.</h1><p><span data-year>2027</span> Scholarship Application</p><p class="deadline">Due <span data-deadline></span></p></header><main>
 <p id="loading" role="status">Loading the current application…</p><div id="applicationContent" hidden><section id="coverLetterGate" aria-labelledby="coverLetterTitle">
 <p class="eyebrow">BEFORE YOU BEGIN</p><h2 id="coverLetterTitle">Read the cover letter</h2>
-<p>Please read the Foundation's cover letter, then acknowledge it before opening the application. It explains eligibility, required documents and the deadline. The same letter will be included in your completed packet.</p>
-<p><a id="coverLetterPdfLink" href="cover-letter.pdf?v=20261127-f4709175" target="_blank" rel="noopener">Open the original cover letter in a new tab</a></p>
-<div class="cover-pages" aria-hidden="true"><figure><img src="cover-page-1.webp?v=20261127-f4709175" width="893" height="1155" alt=""><figcaption>Cover letter - page 1 of 2</figcaption></figure><figure><img src="cover-page-2.webp?v=20261127-f4709175" width="893" height="1155" loading="lazy" alt=""><figcaption>Cover letter - page 2 of 2</figcaption></figure></div>
+<p>Please read and scroll through both pages of the Foundation's cover letter below. Once you reach the bottom of page 2, the acknowledgment checkboxes will unlock so you can continue to the application.</p>
+<div class="cover-reader-shell" id="coverReaderShell">
+<div class="cover-reader-bar"><span id="coverReadProgress" role="status" aria-live="polite">Scroll through page 1 and page 2 below to unlock acknowledgments</span><a id="coverLetterPdfLink" href="cover-letter.pdf?v=20261127-f4709175" target="_blank" rel="noopener">Print / save copy ↗</a></div>
+<div class="cover-scrollbox" id="coverScrollbox" tabindex="0" aria-label="2027 Scholarship Cover Letter (2 pages, scroll to the bottom to continue)">
+<div class="cover-pages" aria-hidden="true"><figure><img src="cover-page-1.webp?v=20261127-f4709175" width="893" height="1155" alt=""><figcaption>Cover letter - page 1 of 2</figcaption></figure><figure><img src="cover-page-2.webp?v=20261127-f4709175" width="893" height="1155" alt=""><figcaption>Cover letter - page 2 of 2</figcaption></figure></div>
+<div id="coverScrollEnd" class="cover-scroll-end" aria-hidden="true">End of cover letter</div>
+</div>
+</div>
 <div id="coverLetterText" class="sr-only"><h3>Cover letter page 1</h3><p class="cover-transcript">Fox Chapel Golf Club Scholarship Foundation, Inc.
 426 Fox Chapel Road ∙ Pittsburgh, PA  15238
 (412) 967-9081
@@ -63,21 +68,94 @@ Sincerely,
 The Fox Chapel Golf Club Scholarship Foundation
 
 The official registration and financial information of the Fox Chapel Golf Club Scholarship Foundation may be obtained from the Pennsylvania Department of State by calling toll free, within Pennsylvania, 1-800-732-0999. Registration does not imply endorsement.</p></div>
-<label class="check cover-ack"><input type="checkbox" id="coverLetterAcknowledgment"><span>I acknowledge that I have read the <span data-year>2027</span> Scholarship Application Cover Letter and understand the application instructions and required materials.</span></label>
-<button id="beginApplication" type="button" class="primary" disabled>Continue to the application</button><p class="hint">Applications must be completed on this website. You can save progress and download your completed packet for your records. Review all answers and documents before submitting. The submitted application is final.</p>
+<div class="ack-block ack-locked" id="acknowledgmentsBlock">
+<h3>Acknowledgments</h3>
+<p class="ack-lead">Check both boxes below, then click <strong>Continue to the application</strong>.</p>
+<p id="coverScrollWarning" class="cover-scroll-warning" role="alert" hidden>Please continue reading and scrolling through both pages of the cover letter above to unlock the checkboxes.</p>
+<label class="check cover-ack"><input type="checkbox" id="coverLetterAcknowledgment" disabled><span>I have read the <span data-year>2027</span> Scholarship Cover Letter and understand the instructions and required materials.</span></label>
+<div class="ack-eligibility" id="coverEligibilityBox">
+<h4>Eligibility Requirements</h4>
+<ol id="coverEligibilityList">
+<li>Club employees must have commenced employment before January 1, 2027 and have completed a minimum of 160 hours of work since their start date.</li>
+<li>Caddies must have completed a minimum of 15 rounds (preferably 20) during 2026 and trending toward completing at least 15 rounds (preferably 20) in 2027.</li>
+<li>Applicants must be enrolled at a qualified school for the Fall 2027 semester.</li>
+</ol>
+<label class="check"><input type="checkbox" id="eligibilityAcknowledgment" disabled><span>I have read and meet the <span data-year>2027</span> Eligibility Requirements listed above.</span></label>
+</div>
+</div>
+<button id="beginApplication" type="button" class="primary" disabled>Continue to the application</button><p id="ackHint" class="hint" role="status">Scroll to the bottom of the cover letter above to unlock the acknowledgment checkboxes.</p><p class="hint">Applications must be completed on this website. You can save progress, download your completed packet for your records, and review everything before submitting. Submitted applications are final.</p>
 </section><div id="applicationWorkflow" hidden>
-<section class="intro"><p class="deadline"><strong>Deadline:</strong> <span data-deadline></span></p><p>Complete the six sections below, add your signatures and supporting documents, then submit your application. You can save your progress and return later.</p>
-<p><strong>Need to finish later?</strong> Choose <strong>Save progress</strong> and keep the downloaded progress file. When you return, choose <strong>Open saved progress</strong> and select that file. Your answers and signatures will be restored; select your supporting documents again. Saving does not submit your application.</p>
-<div class="tools"><button type="button" id="saveDraft">Save progress</button><label class="button secondary" for="loadDraft">Open saved progress</label><input hidden type="file" id="loadDraft" accept="application/json,.json"><button type="button" id="reviewCover" class="secondary">Read the cover letter again</button></div>
-<label class="check"><input type="checkbox" id="rememberProgress">Remember my progress on this device</label><p class="hint">Optional: automatically save your answers and signatures in this browser only. Use this only on your own device. Choose Restore progress from this device when you return, and select your supporting documents again.</p><div class="tools"><button type="button" id="restoreProgress" hidden>Restore progress from this device</button><button type="button" id="forgetProgress" class="text-button">Remove saved progress from this device</button></div><p id="draftStatus" role="status"></p></section>
+<section class="intro"><p>Complete the six sections below, add your signatures and supporting documents, then submit your application.</p>
+<div class="autosave-box">
+<p><strong>Progress saves automatically in this browser:</strong> Your answers and signatures stay saved in this browser's cache on this device until you submit your application or clear them below. If you leave and come back later in the same browser, choose <strong>Restore saved progress</strong> (you will only need to re-select your photo and uploaded documents). Using a shared or public computer? Uncheck the box below or click <strong>Clear saved progress</strong> when finished.</p>
+<div id="restoreBanner" class="restore-banner" hidden><span id="restoreSummary">Saved progress was found in this browser.</span><button type="button" id="restoreProgress" class="primary">Restore saved progress</button></div>
+<label class="check"><input type="checkbox" id="rememberProgress" checked><span>Auto-save my progress in this browser (stays on this device until submitted or cleared)</span></label>
+<div class="tools"><button type="button" id="forgetProgress" class="text-button">Clear saved progress from this browser</button><button type="button" id="reviewCover" class="secondary">Read the cover letter again</button></div>
+<p id="draftStatus" class="hint" role="status"></p>
+<details class="backup-details"><summary>Switching computers or clearing your browser? Save or open a backup file</summary>
+<p class="hint">1. Click <strong>Download backup file</strong> to save <code>Fox-Chapel-<span data-year>2027</span>-Saved-Application.json</code> into your <strong>Downloads</strong> folder (do not double-click or open that file on your computer).<br>2. When you return on another device, click <strong>Open backup file</strong> and select <code>Fox-Chapel-<span data-year>2027</span>-Saved-Application.json</code> from your <strong>Downloads</strong> folder.</p>
+<div class="tools"><button type="button" id="saveDraft">Download backup file</button><label class="button secondary" for="loadDraft">Open backup file</label><input hidden type="file" id="loadDraft" accept="application/json,.json"></div>
+</details>
+</div>
+</section>
 <nav aria-label="Application sections"><a href="#applicant">1 Applicant</a><a href="#family">2 Family</a><a href="#education">3 Education</a><a href="#financial">4 Financial</a><a href="#reference">5 Reference</a><a href="#essay">6 Essay & signatures</a></nav>
 <form id="application" autocomplete="off" novalidate></form><p id="signatureStatus" role="status"></p>
-<section id="finish" class="finish"><h2>Review and submit</h2><div class="checklist"><h3>Include your required documents</h3><ul><li>Your school acceptance letter or financial aid offer letter; include a full-year financial aid estimate if that is the available documentation. Explain unavailable documents in the application.</li><li>The first two pages of your FAFSA summary, if you submitted FAFSA.</li><li>A recommendation letter from someone outside Fox Chapel Golf Club.</li><li>Your personal essay, 1 or 2 pages.</li><li>A digital photo of the applicant (uploaded below — included directly with your single submission).</li><li>Your signature and, if under 18, a parent or guardian signature.</li></ul></div>
-<div class="attachments photo-upload" id="uploadPhoto"><h3>Upload applicant photo</h3><p class="hint">Upload a clear digital photo of the applicant (JPG, PNG, or WebP). Large phone photos are automatically resized cleanly so your photo is included right inside your application packet and delivered in one single submission — no separate email needed.</p><label for="applicantPhoto">Applicant digital photo</label><input type="file" id="applicantPhoto" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" aria-describedby="photoStatus"><div id="photoPreviewWrap" class="photo-preview" hidden><img id="photoPreviewImg" class="photo-thumb" alt="Uploaded applicant photo preview"><div class="photo-meta"><strong id="photoFileName"></strong><span id="photoFileDetail" class="hint"></span><button id="clearPhoto" type="button" class="text-button">Remove photo</button></div></div><p id="photoStatus" role="status" class="hint">No applicant photo selected yet.</p></div>
-<div class="attachments" id="uploadDocuments"><h3>Upload your supporting documents</h3><p class="hint">Choose PDF, JPG or PNG files: up to 8 files, 5 MB each and 15 MB total. Every page of every selected file will follow your completed application in the single PDF you download and submit. You can print that PDF normally. For a certificate-signed file, upload a readable PDF copy; retain the signed original.</p><label for="supportingFiles">Supporting documents</label><input type="file" id="supportingFiles" accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" multiple aria-describedby="attachmentStatus"><p id="attachmentStatus" role="status" class="hint">No supporting files selected.</p><button id="clearAttachments" type="button" hidden>Clear selected files</button></div>
-<div class="review-panel"><h3>Review your application</h3><p>Look through your complete packet before confirming and submitting. You can return to the form to correct any answer.</p><button id="reviewApplication" type="button" class="primary">Review application</button><p id="reviewStatus" role="status" aria-live="polite"></p></div>
-<div class="download-panel"><h3>Keep your completed PDF</h3><p>Your packet includes your personalized cover letter, answers, totals, signatures and selected supporting documents. Complete the application here before downloading.</p><button id="download" type="button">Download completed PDF</button><p id="downloadStatus" role="status"></p><div id="downloadReady" hidden><a id="openPdf" target="_blank" rel="noopener">Open / save your completed PDF</a><button id="sharePdf" type="button" hidden>Share PDF</button></div></div>
-<div class="submit-panel"><h3>Send your application</h3><p id="reviewIdentity" class="review-identity"></p><p>Recipients: <strong id="recipients"></strong></p><label class="check"><input type="checkbox" id="submissionConsent"><span>I checked my name, contact details, answers and supporting documents for accuracy. I authorize sending this completed, signed packet to the recipients above and understand that I cannot edit the submitted application.</span></label><div class="honeypot" aria-hidden="true"><label for="website">Leave this field empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div><p id="emailSetupNotice" class="notice">Online submission is temporarily unavailable. Save your progress and contact the Foundation for help. Please complete the application on this website.</p><button id="submitApplication" type="button" class="primary" disabled>Submit application</button><p id="submitStatus" role="status" aria-live="polite"></p><p class="hint">Your answers and files stay on your device until you choose Submit. Downloading or saving progress does not submit an application.</p></div></section></div></div>
+<section id="finish" class="finish">
+<h2>Final Steps: Uploads, Review &amp; Submit</h2>
+<p class="fin-intro">Your submitted application packet is automatically assembled in clean order for the committee: <strong>Applicant Photo first</strong>, followed by your cover letter and application, with your supporting documents attached at the back.</p>
+
+<div class="finish-step-card photo-upload" id="uploadPhoto">
+<span class="fin-step">Step 1 of 3</span>
+<h3>Upload applicant photo (JPG or PNG only)</h3>
+<p class="hint">Uploaded separately so your portrait appears at the front of your printed packet and is also delivered as a standalone JPG image for Foundation records and publications.</p>
+<p class="hint"><strong>iPhone users:</strong> Choosing a photo directly from your iPhone Photos library converts it to JPG automatically. If you copied a <code>.heic</code> file onto a computer, export it as JPG or upload a clean screenshot (JPG or PNG).</p>
+<label for="applicantPhoto">Applicant digital photo (JPG or PNG)</label>
+<input type="file" id="applicantPhoto" accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-describedby="photoStatus">
+<div id="photoPreviewWrap" class="photo-preview" hidden><img id="photoPreviewImg" class="photo-thumb" alt="Uploaded applicant photo preview"><div class="photo-meta"><strong id="photoFileName"></strong><span id="photoFileDetail" class="hint"></span><button id="clearPhoto" type="button" class="text-button">Remove photo</button></div></div>
+<p id="photoStatus" role="status" class="hint">No applicant photo selected yet.</p>
+</div>
+
+<div class="finish-step-card" id="uploadDocuments">
+<span class="fin-step">Step 2 of 3</span>
+<h3>Upload your supporting documents</h3>
+<p class="hint">Attach all required supporting files together below (PDF, JPG, or PNG; up to 8 files, 5 MB each, 15 MB total). Every selected file is appended automatically at the back of your application packet:</p>
+<ul class="upload-doc-list">
+<li><strong>Personal Essay</strong> (1 to 2 pages)</li>
+<li><strong>Letter of Recommendation</strong> (from someone outside Fox Chapel Golf Club)</li>
+<li><strong>Financial Aid Offer or Cost of Attendance Estimate</strong> (or school acceptance letter)</li>
+<li><strong>FAFSA Submission Summary</strong> (first two pages showing Student Aid Index, if submitted)</li>
+</ul>
+<label for="supportingFiles">Select supporting documents (you may select multiple files at once)</label>
+<input type="file" id="supportingFiles" accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" multiple aria-describedby="attachmentStatus">
+<p id="attachmentStatus" role="status" class="hint">No supporting files selected.</p>
+<button id="clearAttachments" type="button" hidden>Clear selected files</button>
+<p class="hint">For a certificate-signed PDF, upload a flat printable copy and retain the signed original. Explain any unavailable documents in Section 4 or Additional Information.</p>
+</div>
+
+<div class="finish-step-card finish-submit-card">
+<span class="fin-step">Step 3 of 3</span>
+<h3>Review, Keep a Copy &amp; Submit</h3>
+<p class="hint">Preview your complete assembled packet (photo, cover letter, answers, totals, signatures, and supporting documents) before submitting. You can return to make edits or download a PDF copy for your records.</p>
+<div class="tools finish-review-tools">
+<button id="reviewApplication" type="button" class="primary">Review complete packet</button>
+<button id="download" type="button" class="secondary">Download PDF copy</button>
+</div>
+<p id="reviewStatus" role="status" aria-live="polite" class="hint"></p>
+<p id="downloadStatus" role="status" class="hint"></p>
+<div id="downloadReady" hidden><a id="openPdf" target="_blank" rel="noopener">Open / save your completed PDF</a><button id="sharePdf" type="button" hidden>Share PDF</button></div>
+
+<div class="submit-divider"></div>
+<p id="reviewIdentity" class="review-identity"></p>
+<div class="confirm-email-box"><label for="confirmationEmail">Confirmation email for your submission receipt</label><input id="confirmationEmail" name="confirmation_email" type="email" maxlength="240" autocomplete="email" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="you@example.com" aria-describedby="confirmationEmailHint"><p id="confirmationEmailHint" class="hint">We automatically copy your Section 1 email here, or you can enter another address where you want your confirmation receipt sent after submitting.</p></div>
+<p>Submitting to: <strong id="recipients"></strong></p>
+<label class="check"><input type="checkbox" id="submissionConsent"><span>I have reviewed my name, contact details, answers, photo, and supporting documents for accuracy. I authorize submitting this signed packet to the recipients above and understand that submitted applications cannot be edited.</span></label>
+<div class="honeypot" aria-hidden="true"><label for="website">Leave this field empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+<p id="emailSetupNotice" class="notice">Online submission is temporarily unavailable. Save your progress and contact the Foundation for help. Please complete the application on this website.</p>
+<button id="submitApplication" type="button" class="primary" disabled>Submit application</button>
+<p id="submitStatus" role="status" aria-live="polite"></p>
+<p class="hint">Your answers and files stay on your device until you click Submit. Downloading a PDF copy does not submit your application.</p>
+</div>
+</section></div></div>
 </main><footer>Fox Chapel Golf Club Scholarship Foundation, Inc. · <span data-year>2027</span></footer>
 <dialog id="signatureDialog" aria-labelledby="signatureTitle"><div class="signature-dialog"><h2 id="signatureTitle">Sign your application</h2><label for="signerName">Your full name</label><input id="signerName" maxlength="160" autocomplete="name"><fieldset><legend>Choose how to sign</legend><div class="choices"><label><input type="radio" name="signatureMode" value="draw" checked>Draw my signature</label><label><input type="radio" name="signatureMode" value="type">Type my signature</label></div></fieldset><div id="drawSignature"><p class="hint">Sign with your mouse, finger or stylus in the box.</p><canvas id="signatureCanvas" width="720" height="180" aria-label="Draw your signature; choose Type my signature for a keyboard alternative"></canvas><button id="clearSignature" type="button" class="text-button">Clear drawing</button></div><div id="typedSignature" class="typed-signature" hidden></div><label class="check"><input type="checkbox" id="signatureConsent"><span>I am the person named above and agree to use this as my electronic signature on this application.</span></label><p id="signatureError" role="alert"></p><div class="tools"><button type="button" id="useSignature" class="primary">Use this signature</button><button type="button" id="cancelSignature" class="secondary">Cancel</button></div></div></dialog>
 <dialog id="applicationReviewDialog" aria-labelledby="applicationReviewTitle" aria-describedby="applicationReviewHelp"><div class="application-review-shell"><h2 id="applicationReviewTitle">Review your application</h2><p id="applicationReviewHelp">Check every page, including your cover letter and selected supporting documents. Choose Back to make changes to correct anything. Nothing is sent from this review.</p><p class="hint"><a id="reviewPdfLink" target="_blank" rel="noopener">Open the full PDF in a new tab</a> if the preview is unavailable or difficult to read.</p><iframe id="applicationReviewFrame" title="Your complete application packet"></iframe><div class="review-actions"><button id="backToApplication" type="button">Back to make changes</button><button id="continueReview" type="button" class="primary">Continue to final confirmation</button></div></div></dialog>

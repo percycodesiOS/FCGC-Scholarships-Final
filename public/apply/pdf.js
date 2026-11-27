@@ -39,10 +39,17 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=n
  }
  const paired=new Set([...fields.keys()].filter(n=>n.endsWith('_continued')).map(n=>n.slice(0,-10)));
  for(const [name,value] of Object.entries(data)){
-  if(name==='additional_information'||name==='signatures'||paired.has(name)||name.startsWith('annual_')||/^aid_\d_amount$/.test(name)||name.endsWith('_typed_name'))continue;
+  if(name==='additional_information'||name==='signatures'||paired.has(name)||name.startsWith('annual_')||/^aid_\d_(amount|institution)$/.test(name)||name.endsWith('_typed_name')||name==='confirmation_email')continue;
   const f=fields.get(name);if(!f)continue;
   if(f instanceof PDFLib.PDFCheckBox){if(value)f.check();}
   else if(f instanceof PDFLib.PDFRadioGroup){if(value==='Yes'||value==='No')f.select(value);}
+  else if(/^aid_(\d)_name$/.test(name)){
+   const n=name.match(/^aid_(\d)_name$/)[1];
+   const inst=clean(data[`aid_${n}_institution`]).trim();
+   const awardName=clean(value).trim();
+   const combined=awardName&&inst?`${awardName} (${inst})`:(awardName||inst);
+   setText(name,combined);
+  }
   else setText(name,value);
  }
  for(const name of paired){const text=clean(data[name]);encode(text,labels[name]||name);const first=fields.get(name),second=fields.get(name+'_continued');const lines=wrap(text,first.acroField.getWidgets()[0].getRectangle().width-5);let a=lines.shift()||'',b=lines.join(' ');if(wrap(b,second.acroField.getWidgets()[0].getRectangle().width-5).length>1){overflow.push(`${labels[name]||name.replaceAll('_',' ')}: ${text}`);a='See Additional Information.';b='';}first.setText(a);second.setText(b);}
@@ -77,18 +84,6 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=n
 
  // Flattened empty-field appearances can be opaque. Paint signatures last.
  for(const {image,box} of drawnSignatures)doc.getPage(3).drawImage(image,box);
- // If the applicant uploaded a digital photo, include a clean dedicated Applicant Photo page in the PDF packet.
- if(applicantPhoto?.bytes){
-  const embedded=await doc.embedJpg(applicantPhoto.bytes);
-  const photoPage=doc.addPage([612,792]);
-  const titleName=clean(data.applicant_name||'Applicant').replaceAll('\n',' ').trim()||'Applicant';
-  photoPage.drawText('FOX CHAPEL GOLF CLUB SCHOLARSHIP FOUNDATION',{x:54,y:736,size:10,font:bold,color:rgb(.64,.54,.33)});
-  photoPage.drawText(`${config.year} Applicant Photo — ${titleName}`.slice(0,80),{x:54,y:714,size:16,font:bold,color:rgb(.08,.24,.2)});
-  const fit=embedded.scaleToFit(420,520);
-  const px=(612-fit.width)/2,py=140+(520-fit.height)/2;
-  photoPage.drawRectangle({x:px-6,y:py-6,width:fit.width+12,height:fit.height+12,borderColor:rgb(.82,.82,.77),borderWidth:1,color:rgb(.98,.97,.95)});
-  photoPage.drawImage(embedded,{x:px,y:py,width:fit.width,height:fit.height});
- }
  // Prepend the reviewed original (or admin-uploaded replacement) only after indexed application/signature work.
  // Personalize a copy of its salutation; the master letter and body remain unchanged.
  {
@@ -107,6 +102,18 @@ window.FCGCPdf={async create(data,config,{blank=false,labels={},applicantPhoto=n
   }
   const pages=await doc.copyPages(cover,cover.getPageIndices());
   pages.forEach((page,index)=>doc.insertPage(index,page));
+ }
+ // Place the Applicant Photo cleanly on Page 1 (front of the packet) when uploaded so every printed packet opens with the student photo.
+ if(applicantPhoto?.bytes){
+  const embedded=await doc.embedJpg(applicantPhoto.bytes);
+  const photoPage=doc.insertPage(0,[612,792]);
+  const titleName=clean(data.applicant_name||'Applicant').replaceAll('\n',' ').trim()||'Applicant';
+  photoPage.drawText('FOX CHAPEL GOLF CLUB SCHOLARSHIP FOUNDATION',{x:54,y:736,size:10,font:bold,color:rgb(.64,.54,.33)});
+  photoPage.drawText(`${config.year} Applicant Photo - ${titleName}`.slice(0,80),{x:54,y:714,size:16,font:bold,color:rgb(.08,.24,.2)});
+  const fit=embedded.scaleToFit(420,520);
+  const px=(612-fit.width)/2,py=140+(520-fit.height)/2;
+  photoPage.drawRectangle({x:px-6,y:py-6,width:fit.width+12,height:fit.height+12,borderColor:rgb(.82,.82,.77),borderWidth:1,color:rgb(.98,.97,.95)});
+  photoPage.drawImage(embedded,{x:px,y:py,width:fit.width,height:fit.height});
  }
  if(data.testApplication)for(const page of doc.getPages())page.drawText('TEST APPLICATION - FICTIONAL ANSWERS - DO NOT PROCESS',{x:52,y:12,size:8,font:bold,color:rgb(.65,.15,.1)});
  doc.catalog.delete(PDFName.of('StructTreeRoot'));doc.catalog.delete(PDFName.of('MarkInfo'));

@@ -447,6 +447,7 @@ export async function sendApplication(
     year: string;
     name: string;
     email: string;
+    confirmationEmail?: string;
     recipients: string[];
     deadline: string;
     testApplication?: boolean;
@@ -468,6 +469,9 @@ export async function sendApplication(
   const photoLine = info.photo
     ? 'The applicant’s digital photo is included both inside the PDF packet and as a standalone image attachment on this email.'
     : 'No separate applicant photo file was attached (check the application for any explanation).';
+  const confirmTo = (info.confirmationEmail || info.email).trim();
+  const confirmNote =
+    confirmTo.toLowerCase() !== info.email.trim().toLowerCase() ? `\nConfirmation email: ${confirmTo}` : '';
   const message = {
     from: { emailAddress: { address: setup.fromEmail } },
     subject: `${testPrefix}${info.year} Scholarship Application - ${info.name}`,
@@ -477,7 +481,7 @@ export async function sendApplication(
         info.testApplication
           ? 'TEST ONLY. This is a fictional demonstration. Do not process it as a scholarship application.\n\n'
           : ''
-      }A completed scholarship application is attached.\nApplicant: ${info.name}\nApplicant email: ${info.email}\nReference: ${info.id}\n\nThe attached PDF includes the cover letter, application, electronic signatures, and supporting documents selected by the applicant. ${photoLine}\n\nThis email does not indicate a scholarship decision.`,
+      }A completed scholarship application is attached.\nApplicant: ${info.name}\nApplicant email: ${info.email}${confirmNote}\nReference: ${info.id}\n\nThe attached PDF includes the cover letter, application, electronic signatures, and supporting documents selected by the applicant. ${photoLine}\n\nThis email does not indicate a scholarship decision.`,
     },
     toRecipients: info.recipients.map((address) => ({ emailAddress: { address } })),
     replyTo: [{ emailAddress: { address: info.email } }],
@@ -585,7 +589,7 @@ export async function sendApplication(
     const confirmation = {
       message: {
         from: { emailAddress: { address: setup.fromEmail } },
-        toRecipients: [{ emailAddress: { address: info.email } }],
+        toRecipients: [{ emailAddress: { address: confirmTo } }],
         subject: `${info.testApplication ? '[TEST] ' : ''}${info.year} Scholarship Application - Submission Confirmation`,
         body: {
           contentType: 'Text',
