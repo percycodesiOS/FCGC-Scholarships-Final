@@ -323,10 +323,10 @@ export default function Manager({
     <div className="v2-admin-shell">
       <div className="v2-admin-ribbon" role="region" aria-label="Admin workspace indicator">
         <span>
-          <span className="v2-admin-pill">Admin Mode</span> Private Foundation Control Center — Not visible to scholarship applicants
+          <span className="v2-admin-pill">Admin Mode</span> Private Foundation Control Center (not visible to applicants)
         </span>
         <span>
-          {provider === 'microsoft' ? 'Signed in via Club Microsoft 365' : 'Signed in via ChatGPT'}
+          {provider === 'microsoft' ? 'Signed in with Office 365' : 'Signed in via ChatGPT'}
         </span>
       </div>
       <div className="manager">
@@ -335,7 +335,7 @@ export default function Manager({
           ← View live website
         </a>
         <span>
-          Signed in as {name} ({provider === 'microsoft' ? 'Club Microsoft 365' : 'ChatGPT'})
+          Signed in as {name} ({provider === 'microsoft' ? 'Office 365' : 'ChatGPT'})
         </span>
         <a href={provider === 'microsoft' ? '/api/auth/logout' : '/signout-with-chatgpt?return_to=/'} target="_top">
           Sign out
@@ -346,22 +346,22 @@ export default function Manager({
         <div>
           <p className="eyebrow">FOX CHAPEL GOLF CLUB · SCHOLARSHIP FOUNDATION CONTROL CENTER</p>
           <h1>Manage scholarship</h1>
-          <p>No coding or AI needed. Choose a task below, preview your changes, and publish when ready.</p>
+          <p>No coding needed. Pick a tab below, preview your changes, and click Publish changes when ready.</p>
         </div>
         <a className="text-link" href="/handoff">
           Owner guide ↗
         </a>
       </div>
 
-      <div className="editor-actions">
+      <div className={`editor-actions${dirty ? ' has-unsaved' : ''}`}>
         <span className={dirty ? 'unsaved' : 'saved'}>
           {dirty
-            ? `● ${changes.length} unsaved ${changes.length === 1 ? 'change' : 'changes'}`
+            ? `● ${changes.length} unsaved ${changes.length === 1 ? 'change' : 'changes'} (click Publish changes to go live)`
             : saved.updatedAt
-              ? '✓ All saved · ' +
+              ? '✓ All changes published · ' +
                 new Date(saved.updatedAt).toLocaleString('en-US', { timeZone: 'America/New_York' }) +
                 ' ET'
-              : '✓ Original reviewed content'}
+              : '✓ Website is up to date'}
         </span>
         <div>
           {dirty && (
@@ -482,10 +482,10 @@ export default function Manager({
 
                 <article className="v2-status-card">
                   <span className="v2-pill ok">● Security active</span>
-                  <h3>Protected &amp; Committee-Ready</h3>
+                  <h3>Privacy &amp; Safety Built In</h3>
                   <p>
-                    CSP &amp; anti-clickjacking headers, HKDF AES-256-GCM encryption, PDF script scanner, and 3-layer
-                    rate limits are enforced.
+                    Automatic website security is on. Student PDFs and photos go straight to Outlook and are never
+                    stored on the website server.
                   </p>
                   <button type="button" className="secondary" onClick={() => setTab('safety')}>
                     Open printable committee sheet
@@ -497,27 +497,27 @@ export default function Manager({
                 <h2>What would you like to do today?</h2>
                 <div className="v2-action-cards">
                   <button type="button" className="v2-action-tile" onClick={() => setTab('wizard')}>
-                    <strong>Start a new scholarship year</strong>
+                    <strong>Start a new scholarship year →</strong>
                     <span>
-                      Step-by-step wizard updates the year, deadline, auto-close clock, and old dates automatically.
+                      Guided 4-step helper updates the year, deadline, auto-close clock, and dates automatically.
                     </span>
                   </button>
                   <button type="button" className="v2-action-tile" onClick={() => setTab('edit')}>
-                    <strong>Edit wording, dates, or checklist</strong>
-                    <span>Clean visual cards for eligibility, checklist bullets, phone number, and contact emails.</span>
+                    <strong>Edit wording, dates, or cover letter →</strong>
+                    <span>Update the deadline, eligibility rules, checklist, contact info, or upload a new cover letter PDF.</span>
                   </button>
                   <button type="button" className="v2-action-tile" onClick={() => setTab('email')}>
-                    <strong>Verify a student’s submission</strong>
-                    <span>Look up any Reference ID in 1 second or test the Microsoft Outlook connection.</span>
+                    <strong>Check a student submission or mailbox →</strong>
+                    <span>Look up any student Reference ID in 1 second or test the Office 365 Outlook connection.</span>
                   </button>
                   <a
                     className="v2-action-tile"
-                    href="/apply/index.html"
+                    href="/apply/"
                     target="_blank"
                     rel="noopener"
                   >
                     <strong>Open live student application ↗</strong>
-                    <span>Walk Kent and the committee through the cover letter, auto-totals, and Review PDF modal.</span>
+                    <span>Preview the exact online form and PDF packet that applicants use.</span>
                   </a>
                 </div>
               </section>

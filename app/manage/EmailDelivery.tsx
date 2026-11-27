@@ -171,7 +171,7 @@ export default function EmailDelivery({
             disabled={busy || !status?.configured}
             onClick={() => action('connect')}
           >
-            {status?.connected ? 'Reconnect Microsoft mailbox' : 'Connect Microsoft / Outlook'}
+            {status?.connected ? 'Reconnect Office 365 mailbox' : 'Connect Office 365 Account'}
           </button>
           {status?.connected && (
             <>
@@ -209,22 +209,22 @@ export default function EmailDelivery({
       </section>
 
       <section className="editor-section">
-        <p className="eyebrow">ZERO-PII DELIVERY VERIFIER</p>
+        <p className="eyebrow">CHECK A STUDENT SUBMISSION</p>
         <h2>Verify a student submission</h2>
         <p>
           For applicant privacy, the website never stores completed PDFs or student names on the server. It stores
-          only anonymous delivery receipts so you can confirm whether an application reached Microsoft safely.
+          only anonymous delivery receipts so you can confirm whether an application reached Outlook safely.
         </p>
 
         {ledger && (
           <div className="v2-stat-row">
             <div className="v2-stat">
               <strong>{ledger.accepted}</strong>
-              <span>Accepted by Microsoft</span>
+              <span>Delivered to Outlook</span>
             </div>
             <div className="v2-stat">
               <strong>{ledger.reviewRequired}</strong>
-              <span>Needs delivery check</span>
+              <span>Needs attention</span>
             </div>
             <div className="v2-stat">
               <strong>
